@@ -1,0 +1,1 @@
+La función "main" invoca la función "funcion" cinco veces consecutivas. El objetivo de "funcion" es inicializar una variable estática (static) local en 0, incrementarla en 1 y luego imprimirla. Dicha variable, por ser estática, recordará su valor entre diferentes invocaciones. El resultado es "1\n2\n3\n4\n5".
