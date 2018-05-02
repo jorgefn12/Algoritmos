@@ -1,0 +1,27 @@
+-Instalar Ubuntu 17 como Sistema Operativo.
+-Instalar Google Chrome.
+-Acceder mediante Google Chrome a: https://github.com/jorgefn12/Algoritmos/tree/master/Entrega2
+
+Opción 1: Abrir ejecutables
+1) Entrar a una carpeta.
+2) Descargar el ejecutable con el código del ejercicio (ej: g02e05).
+3) Dirigirse a la carpeta de descarga.
+4) Click derecho > Abrir Terminal.
+5) Escribir el código del ejercicio precedido de "./" (ej: ./g02e05).
+7) El programa se estará ejecutando en la terminal.
+8) Repetir desde "1)" hasta acabar con todas las carpetas.
+
+Opción 2: Compilar archivos fuente.
+1) Entrar a una carpeta.
+2) Descargar todo su contenido en una nueva carpeta llamada con el código del ejercicio.
+3) Dirigirse a la carpeta de descarga.
+4) Click derecho > Abrir Terminal.
+5) Por cada archivo "<archivo>.c" que se encuentre en la carpeta de descarga repetir lo siguiente:
+	a)Escribir gcc -Wall -ansi -pedantic -c -o <archivo>.o <archivo>.c
+6) Escribir lo siguiente, y añadir tantos <archivo>.o como cantidad de <archivo>.c hubiera en 5a)
+	gcc -o ejecutable <archivo1>.o <archivo2>.o ... <archivoN>.o
+7) Escribir ./ejecutable.
+8) El programa se estará ejecutando en la terminal.
+9) Repetir desde "1)" hasta acabar con todas las carpetas.
+
+
