@@ -299,6 +299,9 @@ status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_a
         return ST_ERROR_PTR_NULO;
 
     palabra.program_counter = 0;
+    if((palabra.memoria = (char**)malloc(sizeof(char*)))==NULL)
+        return ST_ERROR_MEM;
+    
     while (!feof(archivo_entrada) && status == ST_OK) {
         if ((fgets(linea, MAX_STR, archivo_entrada)) != NULL) {
             status = procesar_linea(linea, &palabra, &palabra.program_counter);
@@ -307,10 +310,8 @@ status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_a
 
 
     printf("program_counter:%d\n", palabra.program_counter);
-    /*
         for (i = 0; i < palabra.program_counter; i++)
             printf("%s\n", palabra.memoria[i]);
-     */
 
     return ST_OK;
 }
@@ -320,9 +321,7 @@ status_t procesar_linea(char *linea, palabras_s* palabra, int *n) {
 
     pch = strtok(linea, INICIO_COMENTARIO);
 
-    printf("%s\n", linea);
-    
-    if ((palabra->memoria = (char**) malloc(sizeof (char*)*(*n + 1))) == NULL)
+    if ((palabra->memoria = (char**) realloc(palabra->memoria,sizeof (char*)*(*n + 1))) == NULL)
         return ST_ERROR_MEM;
     if ((palabra->memoria[*n] = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
         return ST_ERROR_MEM;
