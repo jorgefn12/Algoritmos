@@ -1,1 +1,9 @@
 https://www.overleaf.com/16191533wfsphsmbnmrw#/61928848/
+
+Para hacer un punto aparte: //
+
+Para agregar codigo corto, escribirlo dentro de: \texttt{codigo...}
+
+Para agregar muchas lineas de codigo: \begin{lstlisting}[language=c]
+                                        codigo....
+                                      \end{lstlisting}
