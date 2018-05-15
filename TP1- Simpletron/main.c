@@ -24,6 +24,8 @@
 #define CLA_O "-o"
 #define CLA_OF "-of"
 
+#define INICIO_COMENTARIO ";"
+
 #define DEFAULT_M 50
 #define MAX_STR 200
 #define CANT_MAX_ARG 11
@@ -39,6 +41,7 @@
 #define MSJ_ERROR_CANT_ARG "La cantidad de argumentos ingresados no es valido"
 #define MSJ_ERROR_ARCHIVO_NO_ENCONTRADO "El archivo no existe u ocurrio un error al abrirlo"
 #define MSJ_ERROR_PTR_NULO "Puntero nulo"
+#define MSJ_ERROR_MEM "Error de memoria"
 
 typedef enum {
     ST_OK,
@@ -50,7 +53,8 @@ typedef enum {
     ST_ERROR_IF_NO_INGRESADO,
     ST_ERROR_OF_NO_VALIDO,
     ST_ERROR_OF_NO_INGRESADO,
-    ST_ERROR_ARCHIVO_NO_ENCONTRADO
+    ST_ERROR_ARCHIVO_NO_ENCONTRADO,
+    ST_ERROR_MEM
 } status_t;
 
 typedef enum {
@@ -63,10 +67,17 @@ typedef enum {
     ARCHIVO_DEFAULT
 } archivo_t;
 
+typedef struct {
+    char ** memoria;
+    /*opcode, operando*/
+    long acumulador;
+    int program_counter;
+} palabras_s;
+
 /*En esta función se validan los argumentos pasados por la terminal*/
 status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f);
 /*En procesar_linea se obtiene cada linea del lms*/
-status_t procesar_linea(char *cadena);
+status_t procesar_linea(char *linea, palabras_s *palabra, int *n);
 void imprimir_errores(status_t status);
 status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada);
 
@@ -253,6 +264,8 @@ void imprimir_errores(status_t status) {
         case ST_ERROR_PTR_NULO:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_PTR_NULO, MSJ_MAS_AYUDA);
             break;
+        case ST_ERROR_MEM:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_MEM, MSJ_MAS_AYUDA);
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
     }
@@ -262,6 +275,8 @@ status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_a
     FILE *archivo_entrada;
     char *linea;
     status_t status;
+    palabras_s palabra;
+    size_t i;
 
     switch (tipo_archivo_entrada) {
         case ARCHIVO_BIN:
@@ -283,16 +298,37 @@ status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_a
     if (linea == NULL)
         return ST_ERROR_PTR_NULO;
 
-    while (!feof(archivo_entrada)) {
-        if((fgets(linea, MAX_STR, archivo_entrada))!=NULL){
-            status = procesar_linea(linea);
-            /*procesar linea.....*/
+    palabra.program_counter = 0;
+    while (!feof(archivo_entrada) && status == ST_OK) {
+        if ((fgets(linea, MAX_STR, archivo_entrada)) != NULL) {
+            status = procesar_linea(linea, &palabra, &palabra.program_counter);
         }
     }
+
+
+    printf("program_counter:%d\n", palabra.program_counter);
+    /*
+        for (i = 0; i < palabra.program_counter; i++)
+            printf("%s\n", palabra.memoria[i]);
+     */
 
     return ST_OK;
 }
 
-status_t procesar_linea(char *linea) {
-    puts(linea);
+status_t procesar_linea(char *linea, palabras_s* palabra, int *n) {
+    char * pch;
+
+    pch = strtok(linea, INICIO_COMENTARIO);
+
+    printf("%s\n", linea);
+    
+    if ((palabra->memoria = (char**) malloc(sizeof (char*)*(*n + 1))) == NULL)
+        return ST_ERROR_MEM;
+    if ((palabra->memoria[*n] = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
+        return ST_ERROR_MEM;
+    memcpy(palabra->memoria[*n], linea, strlen(linea) + 1);
+    *n += 1; /*Poner uno en define?*/
+
+    
+    return ST_OK;
 }
