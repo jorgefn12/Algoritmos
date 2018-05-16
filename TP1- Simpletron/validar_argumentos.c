@@ -17,12 +17,13 @@ CAMBIOS REALIZADOS
 
 -agregué constantes STR_STDIN, STR_STDOUT para inicializar los nombres de los archivos en stdin/stdout
 
+-agregué validacion de -m
+
 La función recibe argc y argv, y si todo salió bien devuelve la cantidad de memoria,
 el nombre de los archivos y sus tipos, por los punteros que le pasaron.
 
 
 FALTA:
-Agregar la parte para validar el argumento -m que supongo que despues la agrega Alessandro
 
 Me falta corregir que la función inicialice los nombres por defecto en los casos que lo necesite, 
 por alguna razón me los está tomando mal.
