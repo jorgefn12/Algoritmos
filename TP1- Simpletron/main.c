@@ -293,12 +293,12 @@ void imprimir_errores(status_t status) {
 }
 
 void imprimir_ayuda(){
-    fprintf(stderr, "%s    %s\n\n",CLA_M, MSJ_AYUDA_M1);
-    fprintf(stderr, "%s    %s\n\n",CLA_I, MSJ_AYUDA_I1);
-    fprintf(stderr, "%s   %s\n",CLA_IF, MSJ_AYUDA_IF1);
+    fprintf(stderr, "%s    %s\n\n", CLA_M, MSJ_AYUDA_M1);
+    fprintf(stderr, "%s    %s\n\n", CLA_I, MSJ_AYUDA_I1);
+    fprintf(stderr, "%s   %s\n", CLA_IF, MSJ_AYUDA_IF1);
     fprintf(stderr, "      %s\n\n", MSJ_AYUDA_IF2);
-    fprintf(stderr, "%s    %s\n\n",CLA_O, MSJ_AYUDA_O1);
-    fprintf(stderr, "%s   %s\n",CLA_OF, MSJ_AYUDA_OF1);
+    fprintf(stderr, "%s    %s\n\n", CLA_O, MSJ_AYUDA_O1);
+    fprintf(stderr, "%s   %s\n", CLA_OF, MSJ_AYUDA_OF1);
     fprintf(stderr, "      %s\n\n", MSJ_AYUDA_OF2);
 }
 
