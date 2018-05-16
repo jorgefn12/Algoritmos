@@ -19,6 +19,8 @@ CAMBIOS REALIZADOS
 
 -agregué validacion de -m
 
+-agregué la sección de ayuda y una funcion para imprimirla
+
 La función recibe argc y argv, y si todo salió bien devuelve la cantidad de memoria,
 el nombre de los archivos y sus tipos, por los punteros que le pasaron.
 
