@@ -32,6 +32,14 @@
 #define CANT_MIN_ARG 2
 #define CANT_MAX_M 200
 
+#define MSJ_AYUDA_M1 "OPCION |N|: Simpletron tiene una memoria de N palabras. Si no se da el argumento, por omisión tendrá 50 palabras. El maximo es de 200 palabras"
+#define MSJ_AYUDA_I1 "OPCION |ARCHIVO|: El programa se leerá del archivo pasado como opción, en caso contrario, de stdin."
+#define MSJ_AYUDA_IF1 "OPCION |BIN|: El archivo de entrada se entenderá como una secuencia binaria de enteros que representan las palabras que forman el programa."
+#define MSJ_AYUDA_IF2 "OPCION |TXT|: El archivo de entrada se interpretará como secuencia de números, cada uno en una única línea."
+#define MSJ_AYUDA_O1 "OPCION |ARCHIVO|: El dump se hará en el archivo pasado como opción, si no pasa el argumento, el volcado se hará por stdout."
+#define MSJ_AYUDA_OF1 "OPCION |BIN|: El volcado se hará en binario guardando cada elemento de la estructura del Simpletron, además de la memoria."
+#define MSJ_AYUDA_OF2 "OPCION |TXT|: El volcado se hará en formato de texto imprimiendo los registros y la memoria."
+
 #define MSJ_MAS_AYUDA "Ingrese -h para mas ayuda"
 #define MSJ_ERROR "Ocurrio un error"
 #define MSJ_ERROR_M_NO_VALIDO "El valor de memoria asignado es invalido"
@@ -247,6 +255,9 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
 
 void imprimir_errores(status_t status) {
     switch (status) {
+        case ST_HELP:
+            imprimir_ayuda();
+            break;
         case ST_ERROR_CANT_ARG:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_CANT_ARG, MSJ_MAS_AYUDA);
             break;
@@ -279,6 +290,16 @@ void imprimir_errores(status_t status) {
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
     }
+}
+
+void imprimir_ayuda(){
+    fprintf(stderr, "%s    %s\n\n",CLA_M, MSJ_AYUDA_M1);
+    fprintf(stderr, "%s    %s\n\n",CLA_I, MSJ_AYUDA_I1);
+    fprintf(stderr, "%s   %s\n",CLA_IF, MSJ_AYUDA_IF1);
+    fprintf(stderr, "      %s\n\n", MSJ_AYUDA_IF2);
+    fprintf(stderr, "%s    %s\n\n",CLA_O, MSJ_AYUDA_O1);
+    fprintf(stderr, "%s   %s\n",CLA_OF, MSJ_AYUDA_OF1);
+    fprintf(stderr, "      %s\n\n", MSJ_AYUDA_OF2);
 }
 
 status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada) {
