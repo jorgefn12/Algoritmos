@@ -30,9 +30,11 @@
 #define MAX_STR 200
 #define CANT_MAX_ARG 11
 #define CANT_MIN_ARG 2
+#define CANT_MAX_M 200
 
 #define MSJ_MAS_AYUDA "Ingrese -h para mas ayuda"
 #define MSJ_ERROR "Ocurrio un error"
+#define MSJ_ERROR_M_NO_VALIDO "El valor de memoria asignado es invalido"
 #define MSJ_ERROR_IF_NO_VALIDO "El ingreso de archivo de entrada es invalido"
 #define MSJ_ERROR_ARCHIVO_I_NO_INGRESADO "No se ingreso el archivo de entrada"
 #define MSJ_ERROR_IF_NO_INGRESADO "No se ingreso el tipo de archivo de entrada"
@@ -47,6 +49,7 @@ typedef enum {
     ST_OK,
     ST_HELP,
     ST_ERROR_CANT_ARG,
+    ST_ERROR_M_INVALIDO,
     ST_ERROR_PTR_NULO,
     ST_ERROR_ARCHIVO_I_NO_INGRESADO,
     ST_ERROR_IF_NO_VALIDO,
@@ -140,6 +143,10 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
         /*Se busca el argumento "-m" en argv*/
         if (strcmp(argv[i], CLA_M) == 0) {
             *m = strtol(argv[i + 1], &p, 10);
+            /* Se comprueba que sea un entero positivo menor al maximo*/
+            if (*m > CANT_MAX_M || *m < 0) {
+                return ST_ERROR_M_INVALIDO;
+            } 
             break;
         } else {
             /*Si no se encuentra se asigna 50 por default*/
@@ -243,6 +250,9 @@ void imprimir_errores(status_t status) {
         case ST_ERROR_CANT_ARG:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_CANT_ARG, MSJ_MAS_AYUDA);
             break;
+        case ST_ERROR_M_INVALIDO:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_M_NO_VALIDO, MSJ_MAS_AYUDA);
+            break;    
         case ST_ERROR_ARCHIVO_I_NO_INGRESADO:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_ARCHIVO_I_NO_INGRESADO, MSJ_MAS_AYUDA);
             break;
