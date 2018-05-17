@@ -90,6 +90,7 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
 /*En procesar_linea se obtiene cada linea del lms*/
 status_t procesar_linea(char *linea, palabras_s *palabra, int *n);
 void imprimir_errores(status_t status);
+void imprimir_ayuda(void);
 status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada);
 
 int main(int argc, char** argv) {
