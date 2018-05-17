@@ -1,3 +1,17 @@
+/* CAMBIOS REALIZADOS EN MAIN.C
+
+Agregar prototipo de imprimir_ayuda
+
+Acumulador inicializado a 0,
+
+Agregar "int opcode", "int operando", "int instruccion" en la estructura de palabras_s
+
+Cambiar nombre de la variable "memoria" asociada al CLA por "cant_memoria" para no confundirla con la memoria del simpletron
+
+Agregar "int* memoria_int" y modificar "char** memoria" por "char** memoria_char" en la estructura palabra_s
+para poder trabajar con la memoria segun la necesitemos en char o int
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +66,41 @@
 #define MSJ_ERROR_ARCHIVO_NO_ENCONTRADO "El archivo no existe u ocurrio un error al abrirlo"
 #define MSJ_ERROR_PTR_NULO "Puntero nulo"
 #define MSJ_ERROR_MEM "Error de memoria"
+/*constantes de ejecutar_codigo*/
+#define LEER 10
+#define ESCRIBIR 11
+#define CARGAR 20
+#define GUARDAR 21
+#define PCARGAR 22
+#define PGUARDAR 23
+#define SUMAR 30
+#define RESTAR 31
+#define DIVIDIR 32
+#define MULTIPLICAR 33
+#define JMP 40
+#define JMPNEG 41
+#define JMPZERO 42
+#define JNZ 43
+#define DJNZ 44
+#define HALT 45
+
+#define INIT_INSTRUCCIONES 0
+#define MAX_STR 200
+#define MIN_PALABRA -9999
+#define MAX_PALABRA 9999
+#define MAX_INSTRICCIONES 200
+
+#define MSJ_ERROR_CAD_NO_ES_ENTERO "La cadena contiene carácteres no numericos"
+#define MSJ_ERROR_PALABRA_FUERA_DE_RANGO "La palabra excede el rango admitido por Simpletron [-9999;+9999]"
+#define MSJ_ERROR_SEGMENTATION_FAULT "Se intentó acceder a memoria que Simpletron no solicitó"
+#define MSJ_ERROR_CAD_NO_LEIDA "No pudo leer el valor ingresado"
+#define MSJ_ERROR_OPCODE_INVALIDO "El código de instrucción no es válido"
+#define MSJ_ERROR_MAX_INSTR_SUPERADO "La cantidad de instrucciones operadas alcanzó el máximo admitido"
+
+#define MSJ_COMIENZO_EJECUCION "******** INICIO DE EJECUCION DEL SIMPLETRON *******"
+#define MSJ_FIN_EJECUCION "********* FIN DE EJECUCION DEL SIMPLETRON *********"
+#define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
+#define MSJ_IMPRIMIR_PALABRA "Contenido de la posición"
 
 typedef enum {
     ST_OK,
@@ -65,7 +114,14 @@ typedef enum {
     ST_ERROR_OF_NO_VALIDO,
     ST_ERROR_OF_NO_INGRESADO,
     ST_ERROR_ARCHIVO_NO_ENCONTRADO,
-    ST_ERROR_MEM
+    ST_ERROR_MEM,
+/*status de ejecutar_codigo*/
+    ST_ERROR_CAD_NO_ES_ENTERO,
+    ST_ERROR_PALABRA_FUERA_DE_RANGO,
+    ST_ERROR_SEGMENTATION_FAULT,
+    ST_ERROR_CAD_NO_LEIDA,
+    ST_ERROR_OPCODE_INVALIDO,
+    ST_ERROR_MAX_INSTR_SUPERADO
 } status_t;
 
 typedef enum {
@@ -79,8 +135,9 @@ typedef enum {
 } archivo_t;
 
 typedef struct {
-    char ** memoria;
-    /*opcode, operando*/
+    int* memoria_int;
+    char ** memoria_char;
+    int opcode, operando, instruccion;
     long acumulador;
     int program_counter;
 } palabras_s;
@@ -93,17 +150,19 @@ void imprimir_errores(status_t status);
 void imprimir_ayuda(void);
 status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada);
 
+status_t ejecutar_codigo();
+
 int main(int argc, char** argv) {
     status_t status;
-    int memoria;
+    int cant_memoria;
     char archivo_entrada[MAX_STR], archivo_salida[MAX_STR];
     archivo_t tipo_archivo_entrada, tipo_archivo_salida;
 
-    if ((status = validacion_cla(argc, argv, &memoria, archivo_entrada, &tipo_archivo_entrada, archivo_salida, &tipo_archivo_salida)) != ST_OK) {
+    if ((status = validacion_cla(argc, argv, &cant_memoria, archivo_entrada, &tipo_archivo_entrada, archivo_salida, &tipo_archivo_salida)) != ST_OK) {
         imprimir_errores(status);
 
         printf("argc = %d\n", argc);
-        printf("memoria = %d\n", memoria);
+        printf("cant_memoria = %d\n", cant_memoria);
         printf("nombre archivo i = %s\n", archivo_entrada);
         printf("formato archivo i = %d\n", tipo_archivo_entrada);
         printf("nombre archivo f = %s\n", archivo_salida);
@@ -113,7 +172,7 @@ int main(int argc, char** argv) {
     }
 
     printf("argc = %d\n", argc);
-    printf("memoria = %d\n", memoria);
+    printf("cant_memoria = %d\n", cant_memoria);
     printf("nombre archivo i = %s\n", archivo_entrada);
     printf("formato archivo i = %d\n", tipo_archivo_entrada);
     printf("nombre archivo f = %s\n", archivo_salida);
@@ -123,6 +182,8 @@ int main(int argc, char** argv) {
     if (status != ST_OK)
         imprimir_errores(status);
 
+    if(( status = ejecutar_codigo()) != ST_OK);
+      imprimir_errores(status);
     return EXIT_SUCCESS;
 }
 
@@ -155,7 +216,7 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
             /* Se comprueba que sea un entero positivo menor al maximo*/
             if (*m > CANT_MAX_M || *m < 0) {
                 return ST_ERROR_M_INVALIDO;
-            } 
+            }
             break;
         } else {
             /*Si no se encuentra se asigna 50 por default*/
@@ -244,7 +305,7 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
         }
     }
     if (encontrado != TRUE && encontrado_of != TRUE)
-        *tipo_archivo_f = ARCHIVO_TXT; /*por defecto se interpreta como txt, 
+        *tipo_archivo_f = ARCHIVO_TXT; /*por defecto se interpreta como txt,
                                         sólamente si no se ingreso -o"*/
 
     else if (encontrado == TRUE && encontrado_of != TRUE)
@@ -264,7 +325,7 @@ void imprimir_errores(status_t status) {
             break;
         case ST_ERROR_M_INVALIDO:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_M_NO_VALIDO, MSJ_MAS_AYUDA);
-            break;    
+            break;
         case ST_ERROR_ARCHIVO_I_NO_INGRESADO:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_ARCHIVO_I_NO_INGRESADO, MSJ_MAS_AYUDA);
             break;
@@ -288,6 +349,25 @@ void imprimir_errores(status_t status) {
             break;
         case ST_ERROR_MEM:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_MEM, MSJ_MAS_AYUDA);
+            break;
+        case ST_ERROR_CAD_NO_ES_ENTERO:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_CAD_NO_ES_ENTERO, MSJ_MAS_AYUDA);
+            break;
+        case ST_ERROR_PALABRA_FUERA_DE_RANGO:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_PALABRA_FUERA_DE_RANGO, MSJ_MAS_AYUDA);
+            break;
+        case ST_ERROR_SEGMENTATION_FAULT:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_SEGMENTATION_FAULT, MSJ_MAS_AYUDA);
+            break;
+        case ST_ERROR_CAD_NO_LEIDA:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_CAD_NO_LEIDA, MSJ_MAS_AYUDA);
+            break;
+        case ST_ERROR_OPCODE_INVALIDO:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_OPCODE_INVALIDO, MSJ_MAS_AYUDA);
+            break;
+        case ST_ERROR_MAX_INSTR_SUPERADO:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_MAX_INSTR_SUPERADO, MSJ_MAS_AYUDA);
+            break;
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
     }
@@ -331,9 +411,9 @@ status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_a
         return ST_ERROR_PTR_NULO;
 
     palabra.program_counter = 0;
-    if((palabra.memoria = (char**)malloc(sizeof(char*)))==NULL)
+    if((palabra.memoria_char = (char**)malloc(sizeof(char*)))==NULL)
         return ST_ERROR_MEM;
-    
+
     while (!feof(archivo_entrada) && status == ST_OK) {
         if ((fgets(linea, MAX_STR, archivo_entrada)) != NULL) {
             status = procesar_linea(linea, &palabra, &palabra.program_counter);
@@ -343,7 +423,7 @@ status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_a
 
     printf("program_counter:%d\n", palabra.program_counter);
         for (i = 0; i < palabra.program_counter; i++)
-            printf("%s\n", palabra.memoria[i]);
+            printf("%s\n", palabra.memoria_char[i]);
 
     return ST_OK;
 }
@@ -353,13 +433,140 @@ status_t procesar_linea(char *linea, palabras_s* palabra, int *n) {
 
     pch = strtok(linea, INICIO_COMENTARIO);
 
-    if ((palabra->memoria = (char**) realloc(palabra->memoria,sizeof (char*)*(*n + 1))) == NULL)
+    if ((palabra->memoria_char = (char**) realloc(palabra->memoria_char,sizeof (char*)*(*n + 1))) == NULL)
         return ST_ERROR_MEM;
-    if ((palabra->memoria[*n] = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
+    if ((palabra->memoria_char[*n] = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
         return ST_ERROR_MEM;
-    memcpy(palabra->memoria[*n], linea, strlen(linea) + 1);
+    memcpy(palabra->memoria_char[*n], linea, strlen(linea) + 1);
     *n += 1; /*Poner uno en define?*/
 
-    
+
     return ST_OK;
+}
+
+status_t ejecutar_codigo(){
+	char* codigo_lms[] = {"+1009","+1010","+2009","+3010","+2111","+1111","+4500","+0000","+0000","+0000","+0000","+0000"};
+	char aux[MAX_STR]; /*Aca guardo todo lo que ingresa el usuario*/
+	int temp; /*Guardo enteros para validar antes de guardarlos en memoria*/
+	int cantidad_palabras; /*Guarda la cantidad maxima de palabras que contiene la memoria*/
+	char* p; /*Puntero auxiliar*/
+
+	int* codigo_lms_int; /*Aca se transforma el vector de cadenas en vector de enteros*/
+	int instruccion;
+	size_t program_counter, i;
+	int opcode, operando;
+	long acumulador = 0;
+
+/*Se crea el vector de enteroos*/
+	cantidad_palabras = sizeof(codigo_lms)/sizeof(char*);
+	codigo_lms_int = (int*)malloc(sizeof(int)* cantidad_palabras);
+/*Valida que todos los enteros estén dentro del rango aceptado*/
+	for(i = 0; i < cantidad_palabras; i++){
+		codigo_lms_int[i] = strtol(codigo_lms[i], &p, 10);
+		if(*p != '\n' && *p != '\0' && *p != EOF){
+			return ST_ERROR_CAD_NO_ES_ENTERO;
+		}
+		if(codigo_lms_int[i] < MIN_PALABRA || codigo_lms_int[i] > MAX_PALABRA){
+			return ST_ERROR_PALABRA_FUERA_DE_RANGO;
+		}
+	}
+/*Comienza ejecución*/
+	puts(MSJ_COMIENZO_EJECUCION);
+	for(program_counter = 0; program_counter < MAX_INSTRICCIONES; program_counter++){
+		instruccion = codigo_lms_int[program_counter];
+		operando = instruccion % 100;
+		opcode = instruccion / 100;
+
+		if(operando > cantidad_palabras || operando < INIT_INSTRUCCIONES){
+			puts(MSJ_FIN_EJECUCION);
+			return ST_ERROR_SEGMENTATION_FAULT;
+		}
+
+		switch(opcode){
+			case LEER:
+				printf(MSJ_INGRESO_PALABRA);
+				if (fgets(aux, MAX_STR, stdin) == NULL){
+					puts(MSJ_FIN_EJECUCION);
+					return ST_ERROR_CAD_NO_LEIDA;
+				}
+				if( (temp = strtol(aux, &p, 10)) < MIN_PALABRA || temp > MAX_PALABRA){
+					puts(MSJ_FIN_EJECUCION);
+					return ST_ERROR_PALABRA_FUERA_DE_RANGO;
+				}
+				if(*p != '\n' && *p != '\0' && *p != EOF){
+					puts(MSJ_FIN_EJECUCION);
+					return ST_ERROR_CAD_NO_ES_ENTERO;
+				}
+
+				codigo_lms_int[operando] = temp;
+				break;
+			case ESCRIBIR:
+				printf("%s %i: %i\n",MSJ_IMPRIMIR_PALABRA,operando,codigo_lms_int[operando]);
+				break;
+			case CARGAR:
+				acumulador = codigo_lms_int[operando];
+				break;
+			case GUARDAR:
+				if(acumulador < MIN_PALABRA || acumulador > MAX_PALABRA){
+					puts(MSJ_FIN_EJECUCION);
+					return ST_ERROR_PALABRA_FUERA_DE_RANGO;
+				}
+				codigo_lms_int[operando] = acumulador;
+				break;
+			case PCARGAR:
+				if(codigo_lms_int[operando] > cantidad_palabras || codigo_lms_int[operando] < INIT_INSTRUCCIONES){
+					puts(MSJ_FIN_EJECUCION);
+					return ST_ERROR_SEGMENTATION_FAULT;
+				}
+				acumulador = codigo_lms_int[codigo_lms_int[operando]];
+				break;
+			case PGUARDAR:
+				if(codigo_lms_int[operando] > cantidad_palabras || codigo_lms_int[operando] < INIT_INSTRUCCIONES){
+					puts(MSJ_FIN_EJECUCION);
+					return ST_ERROR_SEGMENTATION_FAULT;
+				}
+				codigo_lms_int[codigo_lms_int[operando]] = acumulador;
+				break;
+			case SUMAR:
+				acumulador += codigo_lms_int[operando];
+				break;
+			case RESTAR:
+				acumulador -= codigo_lms_int[operando];
+				break;
+			case DIVIDIR:
+				acumulador /= codigo_lms_int[operando];
+				break;
+			case MULTIPLICAR:
+				acumulador *= codigo_lms_int[operando];
+				break;
+			case JMP:
+				program_counter = operando;
+				break;
+			case JMPNEG:
+				if (acumulador < 0)
+					program_counter = operando;
+				break;
+			case JMPZERO:
+				if (!acumulador)
+					program_counter = operando;
+				break;
+			case JNZ:
+				if(acumulador)
+					program_counter = operando;
+				break;
+			case DJNZ:
+				acumulador--;
+				if(acumulador)
+					program_counter = operando;
+				break;
+			case HALT:
+				puts(MSJ_FIN_EJECUCION);
+				return ST_OK;
+			default:
+				puts(MSJ_FIN_EJECUCION);
+				return ST_ERROR_OPCODE_INVALIDO;
+		}
+	}
+	puts(MSJ_FIN_EJECUCION);
+	return ST_ERROR_MAX_INSTR_SUPERADO;
 }
