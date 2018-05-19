@@ -128,45 +128,49 @@ typedef struct {
     size_t cantidad_memoria;
 } palabras_s;
 
-/*En esta función se validan los argumentos pasados por la terminal*/
-status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f);
-/*En procesar_linea se obtiene cada linea del lms*/
-status_t cargar_estructura_txt(char *linea, palabras_s *palabra, int *n);
-void imprimir_errores(status_t status);
-status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra);
-status_t cargar_estructura_bin(palabras_s* palabra, int *n, FILE* archivo_entrada_bin);
-status_t cargar_estructura_stdin();
+/*Validacion*/
+status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f);
+/*Carga de estructura*/
+status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra);
+status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrada);
+status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin);
+status_t cargar_estructura_stdin(palabras_s *palabras);
+/*Imprimir*/
 void imprimir_ayuda();
+void imprimir_errores(status_t status);
+void imprimir_dump_stdout(palabras_s palabra);
+void dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida,palabras_s palabra);
+/*Acumulador*/
 status_t ejecutar_codigo();
 
 int main(int argc, char** argv) {
     status_t status;
-    int memoria;
     char archivo_entrada[MAX_STR], archivo_salida[MAX_STR];
     archivo_t tipo_archivo_entrada, tipo_archivo_salida;
     palabras_s palabra;
 
-    status = validacion_cla(argc, argv, &memoria, archivo_entrada, &tipo_archivo_entrada, archivo_salida, &tipo_archivo_salida);
+
+    status = validacion_cla(argc, argv, &palabra.cantidad_memoria, archivo_entrada, &tipo_archivo_entrada, archivo_salida, &tipo_archivo_salida);
     if (status == ST_HELP) {
         imprimir_ayuda();
         return EXIT_SUCCESS;
     } else if (status != ST_OK) {
-        printf("asdasdasda\n");
         imprimir_errores(status);
         return EXIT_FAILURE;
     }
 
-    printf("argc = %d\n", argc);
-    printf("memoria = %d\n", memoria);
-    printf("nombre archivo i = %s\n", archivo_entrada);
-    printf("formato archivo i = %d\n", tipo_archivo_entrada);
     printf("nombre archivo f = %s\n", archivo_salida);
-    printf("formato archivo f = %d\n\n", tipo_archivo_salida);
 
     status = leer_archivo(archivo_entrada, tipo_archivo_entrada, &palabra);
     if (status != ST_OK)
         imprimir_errores(status);
-
+    else {
+        dump(tipo_archivo_salida, archivo_salida,palabra);
+        /*
+                puts("imprimiendo.....");
+                imprimir_dump_stdout(palabra);
+         */
+    }
     free(palabra.memoria);
 
     return EXIT_SUCCESS;
@@ -174,7 +178,7 @@ int main(int argc, char** argv) {
 
 /*Esta funcion valida los argumentos pasados por la linea de comandos
  *El ingreso de argumentos en este caso no deben tener un orden especifico*/
-status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f) {
+status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f) {
     size_t i;
     char * p;
     bool_t encontrado = FALSE, encontrado_of = FALSE;
@@ -216,7 +220,7 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
         if ((strcmp(argv[i], CLA_I)) == 0) {
             if ((strcmp(argv[i + 1], CLA_I_DEFAULT)) == 0) {
                 *tipo_archivo_i = ARCHIVO_DEFAULT;
-                strcpy(archivo_i, STR_STDIN);
+                memcpy(archivo_i, STR_STDIN, strlen(STR_STDIN) + 1);
             } else {
                 /*Guardo el nombre del archivo*/
                 memcpy(archivo_i, argv[i + 1], strlen(argv[i + 1]) + 1);
@@ -265,10 +269,11 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
         }
     }
 
-    /*Si no se encontro el argumento o se tomara como default stdin*/
+    /*Si no se encontro el argumento o se tomara como default stdout*/
     if (encontrado != TRUE) {
+        puts("no encontrado o");
         *tipo_archivo_f = ARCHIVO_DEFAULT;
-        archivo_f = STR_STDOUT;
+        memcpy(archivo_f, STR_STDOUT, strlen(STR_STDOUT) + 1);
     }
 
     /*-----------------------------OF-----------------------------
@@ -290,7 +295,7 @@ status_t validacion_cla(int argc, char **argv, int *m, char *archivo_i, archivo_
         }
     }
     if (encontrado != TRUE && encontrado_of != TRUE)
-        *tipo_archivo_f = ARCHIVO_TXT; /*por defecto se interpreta como txt, 
+        *tipo_archivo_f = ARCHIVO_DEFAULT; /*por defecto se interpreta como stdout,
                                         sólamente si no se ingreso -o"*/
 
     else if (encontrado == TRUE && encontrado_of != TRUE)
@@ -333,97 +338,97 @@ void imprimir_errores(status_t status) {
     }
 }
 
-status_t leer_archivo(const char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra) {
+status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra) {
     FILE *archivo_entrada;
-    char *linea;
     status_t status;
-
-    linea = (char*) malloc(sizeof (char)*MAX_STR);
-    if (linea == NULL)
-        return ST_ERROR_PTR_NULO;
-
-    palabra->program_counter = 0;
 
     switch (tipo_archivo_entrada) {
         case ARCHIVO_BIN:
+            /*ENTRADA stdin*/
             if (strcmp(nombre_archivo_entrada, STR_STDIN) == 0) {
-                puts("ENTRADA: -i stdin -if bin\n");
                 /*
                                 status = cargar_estructura_stdin(palabra, &palabra->program_counter);
                  */
                 break;
             }
 
+            /*ENTRADA archivo*/
             if ((archivo_entrada = fopen(nombre_archivo_entrada, "rb")) == NULL)
                 status = ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-            else {
-                printf("ENTRADA: -i archivo -if bin\n");
-                status = cargar_estructura_bin(palabra, &palabra->program_counter, archivo_entrada);
-            }
+            else
+                status = cargar_estructura_bin(palabra, archivo_entrada);
+
             break;
         case ARCHIVO_TXT:
+            /*ENTRADA stdin*/
             if (strcmp(nombre_archivo_entrada, STR_STDIN) == 0) {
-                printf("ENTRADA: -i stdin -if txt\n");
-                status = cargar_estructura_stdin(palabra, &palabra->program_counter);
+                status = cargar_estructura_stdin(palabra);
                 break;
-            }
-
-            if ((archivo_entrada = fopen(nombre_archivo_entrada, "r")) == NULL) {
-                status = ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-            } else {
-                printf("ENTRADA: -i archivo -if txt\n");
-                while (!feof(archivo_entrada) && (status == ST_OK) && (palabra->cantidad_memoria < palabra->program_counter)) {
-                    if ((fgets(linea, MAX_STR, archivo_entrada)) != NULL) {
-                        status = cargar_estructura_txt(linea, palabra, &palabra->program_counter);
-                    }
-                }
-            }
+            } else
+                status = cargar_estructura_txt(&palabra, nombre_archivo_entrada);
             break;
         default:
             status = ST_ERROR_ARCHIVO_NO_ENCONTRADO;
     }
 
-    free(linea);
-
     return status;
 }
 
-status_t cargar_estructura_txt(char *linea, palabras_s* palabra, int *n) {
-    char * pch;
+status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrada) {
+    char * pch, *linea;
+    status_t status = ST_OK;
+    FILE * archivo_entrada;
+    int i = 0;
 
-    /*Descarto los comentarios*/
-    pch = strtok(linea, INICIO_COMENTARIO);
+    linea = (char*) malloc(sizeof (char)*MAX_STR);
+    if (linea == NULL)
+        return ST_ERROR_MEM;
 
-    /*Guardo la palabra en la estructura*/
-    palabra->memoria[*n] = strtol(linea, &pch, 10);
-    *n += 1; /*Poner uno en define?*/
+    if ((archivo_entrada = fopen(nombre_archivo_entrada, "r")) == NULL)
+        return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
 
-    return ST_OK;
+    if (((*palabra)->memoria = (int*) malloc(sizeof (int))) == NULL)
+        return ST_ERROR_PTR_NULO;
+
+    while (!feof(archivo_entrada) && (i < (*palabra)->cantidad_memoria)) {
+        if ((fgets(linea, MAX_STR, archivo_entrada)) != NULL) {
+            /*Descarto los comentarios*/
+            pch = strtok(linea, INICIO_COMENTARIO);
+
+            /*Guardo la palabra en la estructura*/
+            (*palabra)->memoria[i] = strtol(linea, &pch, 10);
+            i += 1; /*Poner uno en define?*/
+            if (((*palabra)->memoria = (int*) realloc((*palabra)->memoria, sizeof (int)*(i + 1))) == NULL)
+                return ST_ERROR_PTR_NULO;
+        }
+    }
+
+    (*palabra)->cantidad_memoria = i;
+
+    fclose(archivo_entrada);
+    free(linea);
+    return status;
 }
 
-status_t cargar_estructura_bin(palabras_s* palabra, int *n, FILE* archivo_entrada_bin) {
+status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin) {
     /*El archivo esta compuesto por enteros*/
     int i = 0;
 
     palabra->memoria = (int*) malloc(sizeof (int));
 
-    while (!feof(archivo_entrada_bin)) {
+    while (!feof(archivo_entrada_bin) && (i < palabra->cantidad_memoria)) {
         palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(i + 1));
-        fread(&palabra->memoria[i], sizeof (int), 1, archivo_entrada_bin);
-        i++;
+        if ((fread(&palabra->memoria[i], sizeof (int), 1, archivo_entrada_bin)) == 1)
+            i++;
     }
 
     palabra->cantidad_memoria = i;
-
-    for (i = 0; i < palabra->cantidad_memoria; i++) {
-        if ((fprintf(stdout, "num= %d\n", palabra->memoria[i])) < 0)
-            return ST_ERROR_MEM;
-    }
     return ST_OK;
 }
 
-status_t cargar_estructura_stdin(palabras_s *palabras, int *n) {
+status_t cargar_estructura_stdin(palabras_s *palabras) {
     char *palabra_ingresada, *pch;
+    int i = 0;
 
     if ((palabra_ingresada = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
         return ST_ERROR_MEM;
@@ -433,13 +438,13 @@ status_t cargar_estructura_stdin(palabras_s *palabras, int *n) {
     printf("%s ", MSJ_INGRESO_PALABRA);
     fgets(palabra_ingresada, MAX_STR, stdin);
 
-    while (*n < palabras->cantidad_memoria) {
+    while (i < palabras->cantidad_memoria) {
         if ((strcmp(palabra_ingresada, FINALIZAR_CARGA)) != 0) {
             /*Pido memoria para guardar una palabra*/
-            palabras->memoria[*n] = strtol(palabra_ingresada, &pch, 10);
+            palabras->memoria[i] = strtol(palabra_ingresada, &pch, 10);
 
-            (*n)++;
-            if ((palabras->memoria = (int*) realloc(palabras->memoria, sizeof (int)*((*n) + 1))) == NULL)
+            i++;
+            if ((palabras->memoria = (int*) realloc(palabras->memoria, sizeof (int)*(i + 1))) == NULL)
                 return ST_ERROR_MEM;
 
             printf("%s ", MSJ_INGRESO_PALABRA);
@@ -449,6 +454,7 @@ status_t cargar_estructura_stdin(palabras_s *palabras, int *n) {
             break;
     }
 
+    palabras->cantidad_memoria = i;
     free(palabra_ingresada);
 
     return ST_OK;
@@ -463,4 +469,33 @@ void imprimir_ayuda() {
     fprintf(stderr, "%s    %s\n\n", CLA_O, MSJ_AYUDA_O1);
     fprintf(stderr, "%s   %s\n", CLA_OF, MSJ_AYUDA_OF1);
     fprintf(stderr, "      %s\n\n", MSJ_AYUDA_OF2);
+}
+
+void dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida,palabras_s palabra) {
+    switch (tipo_archivo_salida) {
+        case ARCHIVO_TXT:
+            puts("tipo de archivo de salida txt");
+            if (strcmp(nombre_archivo_salida, STR_STDOUT) == 0)
+                puts("no se ingreso archivo de salida");
+            break;
+        case ARCHIVO_BIN:
+            puts("tipo de archivo de salida bin");
+            if (strcmp(nombre_archivo_salida, STR_STDOUT) == 0)
+                puts("no se ingreso archivo de salida");
+            break;
+        case ARCHIVO_DEFAULT:
+            puts("Default: tipo de archivo de salida stdout");
+            imprimir_dump_stdout(palabra);
+            break;
+        default:
+            puts("default");
+    }
+}
+
+void imprimir_dump_stdout(palabras_s palabra) {
+    int i;
+
+    for (i = 0; i < palabra.cantidad_memoria; i++) {
+        fprintf(stdout, "%d: %d\n", i, palabra.memoria[i]);
+    }
 }
