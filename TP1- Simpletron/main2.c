@@ -1,11 +1,3 @@
-/*
-* Hice las funciones de imprimir el dump por stdout, txt y bin
-* 
-* Modifique un poco las funciones de la carga de estructura
-*
-* En la estructura lo modifique por int *opcode, int *operando
-* Elimine intruccion de la estructura porque es lo mismo que memoria[program_counter]
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -155,6 +147,7 @@ typedef struct {
     size_t cantidad_memoria;
     int *opcode;
     int *operando;
+    int instruccion; /*memoria[program_counter]*/
 } palabras_s;
 
 /*Validacion*/
@@ -181,7 +174,7 @@ int main(int argc, char** argv) {
 
     palabra.program_counter = 0;
     palabra.acumulador = 0;
-    
+
     status = validacion_cla(argc, argv, &palabra.cantidad_memoria, archivo_entrada, &tipo_archivo_entrada, archivo_salida, &tipo_archivo_salida);
     if (status != ST_OK) {
         imprimir_errores(status);
@@ -432,7 +425,7 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
     char * pch, *linea;
     status_t status = ST_OK;
     FILE * archivo_entrada;
-    int i = 0;
+    int i = 0, j;
 
     linea = (char*) malloc(sizeof (char)*MAX_STR);
     if (linea == NULL)
@@ -457,8 +450,13 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
         }
     }
 
-    (*palabra)->cantidad_memoria = i;
-
+    /*Cargo el resto de la memoria pedida con ceros*/
+    for (j = i; j < (*palabra)->cantidad_memoria; j++) {
+        if (((*palabra)->memoria = (int*) realloc((*palabra)->memoria, sizeof (int)*(j + 1))) == NULL)
+            return ST_ERROR_PTR_NULO;
+        (*palabra)->memoria[j] = 0;
+    }
+    
     fclose(archivo_entrada);
     free(linea);
     return status;
@@ -466,7 +464,7 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
 
 status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin) {
     /*El archivo esta compuesto por enteros*/
-    int i = 0;
+    int i = 0,j;
 
     palabra->memoria = (int*) malloc(sizeof (int));
 
@@ -476,7 +474,13 @@ status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin) {
             i++;
     }
 
-    palabra->cantidad_memoria = i;
+    /*Cargo el resto de la memoria pedida con ceros*/
+    for (j = i; j < palabra->cantidad_memoria; j++) {
+        if ((palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(j + 1))) == NULL)
+            return ST_ERROR_PTR_NULO;
+        palabra->memoria[j] = 0;
+    }
+
     fclose(archivo_entrada_bin);
     return ST_OK;
 }
@@ -563,31 +567,31 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
             return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
         }
     }
-    
+
     puts("dumping..........");
     fprintf(archivo_salida, "%s\n", DUMP_MSJ_INICIO);
     fprintf(archivo_salida, "%s: %ld\n", DUMP_MSJ_ACUMULADOR, palabra.acumulador);
     fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_PROGRAM_COUNTER, palabra.program_counter);
     fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_INSTRUCCION, palabra.memoria[palabra.program_counter]);
-/*
-    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPCODE, palabra.opcode[palabra.program_counter]);
-    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPERANDO, palabra.operando[palabra.program_counter]);
-*/
+    /*
+        fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPCODE, palabra.opcode[palabra.program_counter]);
+        fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPERANDO, palabra.operando[palabra.program_counter]);
+     */
     fprintf(archivo_salida, "%s\n", DUMP_MSJ_MEMORIA);
 
-    
+
     for (i = 0; i < 10; i++)
-        fprintf(archivo_salida, "%8d", i);
+        fprintf(archivo_salida, "%6d", i);
     fprintf(archivo_salida, "\n");
     for (i = 0, j = 0; i < palabra.cantidad_memoria; i++) {
         if (i % 10 == 0) {
             if (i != 0)
                 fprintf(archivo_salida, "\n");
-            fprintf(archivo_salida, "%d", j);
+            fprintf(archivo_salida, "%d", j * 10);
             j++;
         }
-        
-        fprintf(archivo_salida, "%8d", palabra.memoria[i]);
+
+        fprintf(archivo_salida, "%6d",palabra.memoria[i]);
     }
     puts("\n");
 
