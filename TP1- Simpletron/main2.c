@@ -15,13 +15,13 @@
 #define POS_ARGV10 10
 
 #define DEFAULT_M 50
-#define MAX_STR 200
 #define CANT_MAX_ARG 11
 #define CANT_MIN_ARG 2
 #define INIT_INSTRUCCIONES 0
 #define MIN_PALABRA -9999
 #define MAX_PALABRA 9999
 #define MAX_INSTRICCIONES 200
+#define MAX_STR 200
 #define CANT_MAX_M 200
 
 /*ARGUMENTOS*/
@@ -39,6 +39,7 @@
 #define STR_STDIN "stdin"
 #define STR_STDOUT "stdout"
 #define FINALIZAR_CARGA "-99999\n"
+#define NOMBRE_GENERICO_ARCHIVO_BIN "dump"
 
 /*constantes de ejecutar_codigo*/
 #define LEER 10
@@ -82,7 +83,7 @@
 #define MSJ_ERROR_MEM "Error de memoria"
 #define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
 #define MSJ_ERROR_M_NO_VALIDO "El valor de memoria asignado es invalido"
-
+#define MSJ_ERROR_ESCRIBIR_BIN "Error al escribir el archivo bin"
 #define MSJ_ERROR_CAD_NO_ES_ENTERO "La cadena contiene carácteres no numericos"
 #define MSJ_ERROR_PALABRA_FUERA_DE_RANGO "La palabra excede el rango admitido por Simpletron [-9999;+9999]"
 #define MSJ_ERROR_SEGMENTATION_FAULT "Se intentó acceder a memoria que Simpletron no solicitó"
@@ -95,6 +96,15 @@
 #define MSJ_FIN_EJECUCION "********* FIN DE EJECUCION DEL SIMPLETRON *********"
 #define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
 #define MSJ_IMPRIMIR_PALABRA "Contenido de la posición"
+
+/*DUMP*/
+#define DUMP_MSJ_INICIO "\nREGISTROS:"
+#define DUMP_MSJ_ACUMULADOR "acumulador: "
+#define DUMP_MSJ_PROGRAM_COUNTER "program counter: "
+#define DUMP_MSJ_INSTRUCCION "instruccion: "
+#define DUMP_MSJ_OPCODE "opcode: "
+#define DUMP_MSJ_OPERANDO "operando: "
+#define DUMP_MSJ_MEMORIA "\nMEMORIA"
 
 typedef enum {
     ST_OK,
@@ -115,7 +125,8 @@ typedef enum {
     ST_ERROR_SEGMENTATION_FAULT,
     ST_ERROR_CAD_NO_LEIDA,
     ST_ERROR_OPCODE_INVALIDO,
-    ST_ERROR_MAX_INSTR_SUPERADO
+    ST_ERROR_MAX_INSTR_SUPERADO,
+            ST_ERROR_ESCRIBIR_BIN
 } status_t;
 
 typedef enum {
@@ -134,7 +145,9 @@ typedef struct {
     long acumulador;
     int program_counter;
     size_t cantidad_memoria;
-    int opcode, operando, instruccion;
+    int *opcode;
+    int *operando;
+    int instruccion; /*memoria[program_counter]*/
 } palabras_s;
 
 /*Validacion*/
@@ -147,8 +160,9 @@ status_t cargar_estructura_stdin(palabras_s *palabras);
 /*Imprimir*/
 void imprimir_ayuda();
 void imprimir_errores(status_t status);
-void imprimir_dump_stdout(palabras_s palabra);
-void dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabras_s palabra);
+status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida);
+status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabras_s palabra);
+status_t imprimir_dump_bin(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida);
 /*Acumulador*/
 status_t ejecutar_codigo();
 
@@ -171,11 +185,9 @@ int main(int argc, char** argv) {
     if (status != ST_OK)
         imprimir_errores(status);
     else {
-        dump(tipo_archivo_salida, archivo_salida, palabra);
-        /*
-                puts("imprimiendo.....");
-                imprimir_dump_stdout(palabra);
-         */
+        status = dump(tipo_archivo_salida, archivo_salida, palabra);
+        if (status != ST_OK)
+            imprimir_errores(status);
     }
     free(palabra.memoria);
 
@@ -363,6 +375,9 @@ void imprimir_errores(status_t status) {
         case ST_ERROR_MAX_INSTR_SUPERADO:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_MAX_INSTR_SUPERADO, MSJ_MAS_AYUDA);
             break;
+        case ST_ERROR_ESCRIBIR_BIN:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_ESCRIBIR_BIN, MSJ_MAS_AYUDA);
+            break;
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
     }
@@ -501,33 +516,82 @@ void imprimir_ayuda() {
     fprintf(stderr, "      %s\n\n", MSJ_AYUDA_OF2);
 }
 
-void dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabras_s palabra) {
+status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabras_s palabra) {
+    status_t status = ST_OK;
+
     switch (tipo_archivo_salida) {
         case ARCHIVO_TXT:
-            puts("tipo de archivo de salida txt");
-            if (strcmp(nombre_archivo_salida, STR_STDOUT) == 0)
-                puts("no se ingreso archivo de salida");
+            status = imprimir_dump_por_stdout_o_txt(palabra, nombre_archivo_salida, tipo_archivo_salida);
             break;
         case ARCHIVO_BIN:
-            puts("tipo de archivo de salida bin");
-            if (strcmp(nombre_archivo_salida, STR_STDOUT) == 0)
-                puts("no se ingreso archivo de salida");
+            if (strcmp(nombre_archivo_salida, STR_STDOUT) == 0){
+                memcpy(nombre_archivo_salida,NOMBRE_GENERICO_ARCHIVO_BIN,strlen(NOMBRE_GENERICO_ARCHIVO_BIN)+1);
+            }
+            status = imprimir_dump_bin(palabra,nombre_archivo_salida,tipo_archivo_salida);
             break;
         case ARCHIVO_DEFAULT:
-            puts("Default: tipo de archivo de salida stdout");
-            imprimir_dump_stdout(palabra);
+            /*No se ingreso -o ni -of*/
+            status = imprimir_dump_por_stdout_o_txt(palabra, nombre_archivo_salida, tipo_archivo_salida);
             break;
         default:
             puts("default");
     }
+
+    return status;
 }
 
-void imprimir_dump_stdout(palabras_s palabra) {
-    int i;
+status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida) {
+    int i, j;
+    FILE *archivo_salida;
 
-    for (i = 0; i < palabra.cantidad_memoria; i++) {
-        fprintf(stdout, "%d: %d\n", i, palabra.memoria[i]);
+    if (tipo_archivo_salida == ARCHIVO_DEFAULT)
+        archivo_salida = stdout;
+    else if (tipo_archivo_salida == ARCHIVO_TXT) {
+        archivo_salida = fopen(nombre_archivo_salida, "w");
+        if (archivo_salida == NULL) {
+            return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
+        }
     }
+
+    fprintf(archivo_salida, "%s\n", DUMP_MSJ_INICIO);
+    fprintf(archivo_salida, "%s: %ld\n", DUMP_MSJ_ACUMULADOR, palabra.acumulador);
+    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_PROGRAM_COUNTER, palabra.program_counter);
+    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_INSTRUCCION, palabra.memoria[palabra.program_counter]);
+    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPCODE, palabra.opcode[palabra.program_counter]);
+    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPERANDO, palabra.operando[palabra.program_counter]);
+    fprintf(archivo_salida, "%s\n", DUMP_MSJ_MEMORIA);
+
+    /*DES-HARCODEAR ESTO*/
+    for (i = 0; i < 10; i++)
+        fprintf(archivo_salida, "%8d", i);
+    fprintf(archivo_salida, "\n");
+    for (i = 0, j = 0; i < palabra.cantidad_memoria; i++) {
+        if (i % 10 == 0) {
+            if (i != 0)
+                fprintf(archivo_salida, "\n");
+            fprintf(archivo_salida, "%d", j);
+            j++;
+        }
+        fprintf(archivo_salida, "%8d", palabra.memoria[i]);
+    }
+    puts("\n");
+
+    return ST_OK;
+}
+
+status_t imprimir_dump_bin(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida) {
+    int i;
+    FILE *archivo_salida;
+
+    if ((archivo_salida = fopen(nombre_archivo_salida, "w")) == NULL)
+        return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
+
+    for (i = 0; i < palabra.cantidad_memoria; i++){
+        if((fwrite(&(palabra.memoria[i]),sizeof(int),1,archivo_salida))!=1)
+            return ST_ERROR_ESCRIBIR_BIN;
+    }
+    
+    return ST_OK;
 }
 
 status_t ejecutar_codigo() {
