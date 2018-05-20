@@ -1,3 +1,11 @@
+/*
+* Hice las funciones de imprimir el dump por stdout, txt y bin
+* 
+* Modifique un poco las funciones de la carga de estructura
+*
+* En la estructura lo modifique por int *opcode, int *operando
+* Elimine intruccion de la estructura porque es lo mismo que memoria[program_counter]
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -147,7 +155,6 @@ typedef struct {
     size_t cantidad_memoria;
     int *opcode;
     int *operando;
-    int instruccion; /*memoria[program_counter]*/
 } palabras_s;
 
 /*Validacion*/
