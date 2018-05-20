@@ -126,7 +126,7 @@ typedef enum {
     ST_ERROR_CAD_NO_LEIDA,
     ST_ERROR_OPCODE_INVALIDO,
     ST_ERROR_MAX_INSTR_SUPERADO,
-            ST_ERROR_ESCRIBIR_BIN
+    ST_ERROR_ESCRIBIR_BIN
 } status_t;
 
 typedef enum {
@@ -172,7 +172,9 @@ int main(int argc, char** argv) {
     archivo_t tipo_archivo_entrada, tipo_archivo_salida;
     palabras_s palabra;
 
-
+    palabra.program_counter = 0;
+    palabra.acumulador = 0;
+    
     status = validacion_cla(argc, argv, &palabra.cantidad_memoria, archivo_entrada, &tipo_archivo_entrada, archivo_salida, &tipo_archivo_salida);
     if (status != ST_OK) {
         imprimir_errores(status);
@@ -468,6 +470,7 @@ status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin) {
     }
 
     palabra->cantidad_memoria = i;
+    fclose(archivo_entrada_bin);
     return ST_OK;
 }
 
@@ -524,10 +527,10 @@ status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabr
             status = imprimir_dump_por_stdout_o_txt(palabra, nombre_archivo_salida, tipo_archivo_salida);
             break;
         case ARCHIVO_BIN:
-            if (strcmp(nombre_archivo_salida, STR_STDOUT) == 0){
-                memcpy(nombre_archivo_salida,NOMBRE_GENERICO_ARCHIVO_BIN,strlen(NOMBRE_GENERICO_ARCHIVO_BIN)+1);
+            if (strcmp(nombre_archivo_salida, STR_STDOUT) == 0) {
+                memcpy(nombre_archivo_salida, NOMBRE_GENERICO_ARCHIVO_BIN, strlen(NOMBRE_GENERICO_ARCHIVO_BIN) + 1);
             }
-            status = imprimir_dump_bin(palabra,nombre_archivo_salida,tipo_archivo_salida);
+            status = imprimir_dump_bin(palabra, nombre_archivo_salida, tipo_archivo_salida);
             break;
         case ARCHIVO_DEFAULT:
             /*No se ingreso -o ni -of*/
@@ -535,6 +538,7 @@ status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabr
             break;
         default:
             puts("default");
+            break;
     }
 
     return status;
@@ -547,21 +551,24 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
     if (tipo_archivo_salida == ARCHIVO_DEFAULT)
         archivo_salida = stdout;
     else if (tipo_archivo_salida == ARCHIVO_TXT) {
-        archivo_salida = fopen(nombre_archivo_salida, "w");
+        archivo_salida = fopen(nombre_archivo_salida, "w+");
         if (archivo_salida == NULL) {
             return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
         }
     }
-
+    
+    puts("dumping..........");
     fprintf(archivo_salida, "%s\n", DUMP_MSJ_INICIO);
     fprintf(archivo_salida, "%s: %ld\n", DUMP_MSJ_ACUMULADOR, palabra.acumulador);
     fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_PROGRAM_COUNTER, palabra.program_counter);
     fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_INSTRUCCION, palabra.memoria[palabra.program_counter]);
+/*
     fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPCODE, palabra.opcode[palabra.program_counter]);
     fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPERANDO, palabra.operando[palabra.program_counter]);
+*/
     fprintf(archivo_salida, "%s\n", DUMP_MSJ_MEMORIA);
 
-    /*DES-HARCODEAR ESTO*/
+    
     for (i = 0; i < 10; i++)
         fprintf(archivo_salida, "%8d", i);
     fprintf(archivo_salida, "\n");
@@ -572,10 +579,13 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
             fprintf(archivo_salida, "%d", j);
             j++;
         }
+        
         fprintf(archivo_salida, "%8d", palabra.memoria[i]);
     }
     puts("\n");
 
+    if (tipo_archivo_salida == ARCHIVO_TXT)
+        fclose(archivo_salida);
     return ST_OK;
 }
 
@@ -586,11 +596,12 @@ status_t imprimir_dump_bin(palabras_s palabra, char *nombre_archivo_salida, arch
     if ((archivo_salida = fopen(nombre_archivo_salida, "w")) == NULL)
         return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
 
-    for (i = 0; i < palabra.cantidad_memoria; i++){
-        if((fwrite(&(palabra.memoria[i]),sizeof(int),1,archivo_salida))!=1)
+    for (i = 0; i < palabra.cantidad_memoria; i++) {
+        if ((fwrite(&(palabra.memoria[i]), sizeof (int), 1, archivo_salida)) != 1)
             return ST_ERROR_ESCRIBIR_BIN;
     }
-    
+
+    fclose(archivo_salida);
     return ST_OK;
 }
 
