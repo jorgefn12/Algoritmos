@@ -145,8 +145,8 @@ typedef struct {
     long acumulador;
     int program_counter;
     size_t cantidad_memoria;
-    int *opcode;
-    int *operando;
+    int opcode;
+    int operando;
     int instruccion; /*memoria[program_counter]*/
 } palabras_s;
 
@@ -163,8 +163,13 @@ void imprimir_errores(status_t status);
 status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida);
 status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabras_s palabra);
 status_t imprimir_dump_bin(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida);
-/*Acumulador*/
-status_t ejecutar_codigo();
+
+/*
+El programa supone que la memoria ya está cargada con enteros,
+si no le llegan enteros, seguramente salga porque valida que estén dentro del rango [-9999;+9999]
+Al finalizar retorna status_t, y deja la estructura del simpletron modificada con los ultimos registros
+*/
+status_t ejecutar_codigo(palabras_s * palabra);
 
 int main(int argc, char** argv) {
     status_t status;
@@ -187,6 +192,10 @@ int main(int argc, char** argv) {
     if (status != ST_OK)
         imprimir_errores(status);
     else {
+    	status = ejecutar_codigo(&palabra);
+    	if (status != ST_OK)
+            imprimir_errores(status);
+
         status = dump(tipo_archivo_salida, archivo_salida, palabra);
         if (status != ST_OK)
             imprimir_errores(status);
@@ -572,11 +581,9 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
     fprintf(archivo_salida, "%s\n", DUMP_MSJ_INICIO);
     fprintf(archivo_salida, "%s: %ld\n", DUMP_MSJ_ACUMULADOR, palabra.acumulador);
     fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_PROGRAM_COUNTER, palabra.program_counter);
-    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_INSTRUCCION, palabra.memoria[palabra.program_counter]);
-    /*
-        fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPCODE, palabra.opcode[palabra.program_counter]);
-        fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPERANDO, palabra.operando[palabra.program_counter]);
-     */
+    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_INSTRUCCION, palabra.instruccion);
+    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPCODE, palabra.opcode);
+    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPERANDO, palabra.operando);
     fprintf(archivo_salida, "%s\n", DUMP_MSJ_MEMORIA);
 
 
@@ -616,120 +623,106 @@ status_t imprimir_dump_bin(palabras_s palabra, char *nombre_archivo_salida, arch
     return ST_OK;
 }
 
-status_t ejecutar_codigo() {
-    char* codigo_lms[] = {"+1009", "+1010", "+2009", "+3010", "+2111", "+1111", "+4500", "+0000", "+0000", "+0000", "+0000", "+0000"};
-    char aux[MAX_STR]; /*Aca guardo todo lo que ingresa el usuario*/
-    int temp; /*Guardo enteros para validar antes de guardarlos en memoria*/
-    int cantidad_palabras; /*Guarda la cantidad maxima de palabras que contiene la memoria*/
+status_t ejecutar_codigo(palabras_s * palabra){
+	char aux[MAX_STR]; /*Cadena auxiliar en donde se valida lo que ingresa el usuario*/
+    long temp; /*Guardo enteros para validar antes de guardarlos en memoria*/
     char* p; /*Puntero auxiliar*/
+    size_t i;
 
-    int* codigo_lms_int; /*Aca se transforma el vector de cadenas en vector de enteros*/
-    int instruccion;
-    size_t program_counter, i;
-    int opcode, operando;
-    long acumulador = 0;
-
-    /*Se crea el vector de enteroos*/
-    cantidad_palabras = sizeof (codigo_lms) / sizeof (char*);
-    codigo_lms_int = (int*) malloc(sizeof (int)* cantidad_palabras);
-    /*Valida que todos los enteros estén dentro del rango aceptado*/
-    for (i = 0; i < cantidad_palabras; i++) {
-        codigo_lms_int[i] = strtol(codigo_lms[i], &p, 10);
-        if (*p != '\n' && *p != '\0' && *p != EOF) {
-            return ST_ERROR_CAD_NO_ES_ENTERO;
-        }
-        if (codigo_lms_int[i] < MIN_PALABRA || codigo_lms_int[i] > MAX_PALABRA) {
+   	/*Valida que los enteros estén dentro del rango*/
+    for(i = 0; i < palabra->cantidad_memoria; i++){
+        if(palabra->memoria[i] < MIN_PALABRA || palabra->memoria[i] > MAX_PALABRA){
             return ST_ERROR_PALABRA_FUERA_DE_RANGO;
         }
     }
-    /*Comienza ejecución*/
-    puts(MSJ_COMIENZO_EJECUCION);
-    for (program_counter = 0; program_counter < MAX_INSTRICCIONES; program_counter++) {
-        instruccion = codigo_lms_int[program_counter];
-        operando = instruccion % 100;
-        opcode = instruccion / 100;
 
-        if (operando > cantidad_palabras || operando < INIT_INSTRUCCIONES) {
+	/*Comienza ejecución*/
+    puts(MSJ_COMIENZO_EJECUCION);
+    for(palabra->program_counter = 0; palabra->program_counter < MAX_INSTRICCIONES; palabra->program_counter++){
+        palabra->instruccion = palabra->memoria[palabra->program_counter];
+        palabra->operando = palabra->instruccion % 100;
+        palabra->opcode = palabra->instruccion / 100;
+        /*valida que el operando pueda ser accedido*/
+        if(palabra->operando > palabra->cantidad_memoria || palabra->operando < INIT_INSTRUCCIONES){
             puts(MSJ_FIN_EJECUCION);
             return ST_ERROR_SEGMENTATION_FAULT;
         }
 
-        switch (opcode) {
+        switch(palabra->opcode){
             case LEER:
                 printf(MSJ_INGRESO_PALABRA);
-                if (fgets(aux, MAX_STR, stdin) == NULL) {
+                if (fgets(aux, MAX_STR, stdin) == NULL){
                     puts(MSJ_FIN_EJECUCION);
                     return ST_ERROR_CAD_NO_LEIDA;
                 }
-                if ((temp = strtol(aux, &p, 10)) < MIN_PALABRA || temp > MAX_PALABRA) {
+                if( (temp = strtol(aux, &p, 10)) < MIN_PALABRA || temp > MAX_PALABRA){
                     puts(MSJ_FIN_EJECUCION);
                     return ST_ERROR_PALABRA_FUERA_DE_RANGO;
                 }
-                if (*p != '\n' && *p != '\0' && *p != EOF) {
+                if(*p != '\n' && *p != '\0' && *p != EOF){
                     puts(MSJ_FIN_EJECUCION);
                     return ST_ERROR_CAD_NO_ES_ENTERO;
                 }
-
-                codigo_lms_int[operando] = temp;
+                palabra->memoria[palabra->operando] = temp;
                 break;
             case ESCRIBIR:
-                printf("%s %i: %i\n", MSJ_IMPRIMIR_PALABRA, operando, codigo_lms_int[operando]);
+                printf("%s %i: %i\n",MSJ_IMPRIMIR_PALABRA,palabra->operando,palabra->memoria[palabra->operando]);
                 break;
             case CARGAR:
-                acumulador = codigo_lms_int[operando];
+                palabra->acumulador = palabra->memoria[palabra->operando];
                 break;
             case GUARDAR:
-                if (acumulador < MIN_PALABRA || acumulador > MAX_PALABRA) {
+                if(palabra->acumulador < MIN_PALABRA || palabra->acumulador > MAX_PALABRA){
                     puts(MSJ_FIN_EJECUCION);
                     return ST_ERROR_PALABRA_FUERA_DE_RANGO;
                 }
-                codigo_lms_int[operando] = acumulador;
+                palabra->memoria[palabra->operando] = palabra->acumulador;
                 break;
             case PCARGAR:
-                if (codigo_lms_int[operando] > cantidad_palabras || codigo_lms_int[operando] < INIT_INSTRUCCIONES) {
+                if(palabra->memoria[palabra->operando] > palabra->cantidad_memoria || palabra->memoria[palabra->operando] < INIT_INSTRUCCIONES){
                     puts(MSJ_FIN_EJECUCION);
                     return ST_ERROR_SEGMENTATION_FAULT;
                 }
-                acumulador = codigo_lms_int[codigo_lms_int[operando]];
+                palabra->acumulador = palabra->memoria[palabra->memoria[palabra->operando]];
                 break;
             case PGUARDAR:
-                if (codigo_lms_int[operando] > cantidad_palabras || codigo_lms_int[operando] < INIT_INSTRUCCIONES) {
+                if(palabra->memoria[palabra->operando] > palabra->cantidad_memoria || palabra->memoria[palabra->operando] < INIT_INSTRUCCIONES){
                     puts(MSJ_FIN_EJECUCION);
                     return ST_ERROR_SEGMENTATION_FAULT;
                 }
-                codigo_lms_int[codigo_lms_int[operando]] = acumulador;
+                palabra->memoria[palabra->memoria[palabra->operando]] = palabra->acumulador;
                 break;
             case SUMAR:
-                acumulador += codigo_lms_int[operando];
+                palabra->acumulador += palabra->memoria[palabra->operando];
                 break;
             case RESTAR:
-                acumulador -= codigo_lms_int[operando];
+                palabra->acumulador -= palabra->memoria[palabra->operando];
                 break;
             case DIVIDIR:
-                acumulador /= codigo_lms_int[operando];
+                palabra->acumulador /= palabra->memoria[palabra->operando];
                 break;
             case MULTIPLICAR:
-                acumulador *= codigo_lms_int[operando];
+                palabra->acumulador *= palabra->memoria[palabra->operando];
                 break;
             case JMP:
-                program_counter = operando;
+                palabra->program_counter = palabra->operando;
                 break;
             case JMPNEG:
-                if (acumulador < 0)
-                    program_counter = operando;
+                if (palabra->acumulador < 0)
+                    palabra->program_counter = palabra->operando;
                 break;
             case JMPZERO:
-                if (!acumulador)
-                    program_counter = operando;
+                if (!palabra->acumulador)
+                    palabra->program_counter = palabra->operando;
                 break;
             case JNZ:
-                if (acumulador)
-                    program_counter = operando;
+                if(palabra->acumulador)
+                    palabra->program_counter = palabra->operando;
                 break;
             case DJNZ:
-                acumulador--;
-                if (acumulador)
-                    program_counter = operando;
+                palabra->acumulador--;
+                if(palabra->acumulador)
+                    palabra->program_counter = palabra->operando;
                 break;
             case HALT:
                 puts(MSJ_FIN_EJECUCION);
