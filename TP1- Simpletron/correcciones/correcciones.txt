@@ -1,0 +1,59 @@
+correcciones de codigo/ejecucion
+linea 188 y 192, deberia liberar memoria (si la pidio) y retornar fallo.
+linea 404 retornar directamente? Ambas son validas, me parece que conviene dejarlo. Discutir
+
+linea 406 y 415 no usan el mismo criterio, en uno se abre el archivo y se carga la estructura,
+	en el otro se carga directamente (se abre dentro de la funcion).
+
+linea 424 porque pasar un puntero doble a estructura si la direccion del puntero no se modifica.
+	podes pasar una copia de puntero (como hiciste con las demas funciones) y seria lo mismo.
+linea 425 "char * pch, *linea" no sería "char * pch, linea"???
+linea 438,449 deberia ser ST_ERROR_MEM para ser mas especificos con el error.
+linea 441 validar que fgets returne NULL.
+
+446: validar strtol
+447:incrementar solo si lee bien.
+
+
+linea 469 validar malloc
+
+linea 472 validar realloc en caso de fallos
+
+linea 479 y 472 si se terminan rellenando la memoria para que iguale cantidad_memoria-> deberia
+usarse malloc directamente sin realloc.
+
+linea 430 y 492 porque no utilizar un arreglo estatico, va a tener el mismo tamaño y se destruye al finalizar la funcion
+linea 494 (int*) malloc(sizeof (int*))) == NULL) deberia ser (int*) malloc(sizeof (int))) == NULL)???
+
+
+linea 503: agregar validacion para que si no ingreso un numero, pueda intentar nuevamente
+
+linea 505: incrementar i solamente si leyo correctamente -> agregar un if.
+
+de linea 497 a 510: me parece que es mejor usar do while. para meter todo dentro de un ciclo, y ademas
+	se puede evitar el break poniendo una condicion mas legible en el ciclo.
+
+588 anidar condiciones en una sola
+
+En las funciones para imprimir dump 
+-> mandar un puntero o copia de puntero a estructura en lugar de copia de estructura.
+Validar punteros
+Validar con un temp que lo que retorna strtol este entre los rangos, 
+	para que no haya error al convertir a entero (eg. que lo tome como un negativo)
+Tratar de reparar breaks y i = argc.
+Validar reallocs
+Revisar implementacion de strtok, imprimiendo por pantalla. linea 443.
+El tratamiento con stdin y archivo bin es distinto (rellenar con 0 cuando no se alcanza memoria pedida)
+Discutir si rellenar o no:
+Agregar 0s no afecta la ejecucion.
+Ventaja de no rellenar:
+1)Un usuario quiere añadir un instructivo gigante, pero no sabe cuanta memoria pide -> agrega un numero muy grande en -m. Pero no le interesa el resto. Aquí no se deberia agregar ceros.
+2)Si se ingresa por stdin, es muy probable que no sepa cuanta memoria utilizar especificamente -> se excede con -m.
+
+Ventaja de rellenar. 
+1)Un usuario sabe que necesita varias lineas de codigo para variables, en lugar de agregar muchos ceros al codigo puede excederse con -m sabiendo que se van a rellenar.
+
+Cambiar orden de TRUE,FALSE.
+
+Preguntar si es necesario imprimir por binario los otros registros ademas de la memoria. Y si necesitamos seguir un formato.
+Funcionamiento si envian -o stdout -of bin
