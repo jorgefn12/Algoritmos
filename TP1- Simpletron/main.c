@@ -496,7 +496,7 @@ status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin) {
 
 status_t cargar_estructura_stdin(palabras_s *palabras) {
     char *palabra_ingresada, *pch;
-    int i = 0;
+    int i = 0, aux;
 
     if ((palabra_ingresada = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
         return ST_ERROR_MEM;
@@ -509,9 +509,10 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
     while (i < palabras->cantidad_memoria) {
         if ((strcmp(palabra_ingresada, FINALIZAR_CARGA)) != 0) {
             /*Pido memoria para guardar una palabra*/
-            palabras->memoria[i] = strtol(palabra_ingresada, &pch, 10);
+            aux = strtol(palabra_ingresada, &pch, 10);
 
             if (strlen(pch) == 1) {
+                palabras->memoria[i] = aux;
                 i++;
                 if ((palabras->memoria = (int*) realloc(palabras->memoria, sizeof (int)*(i + 1))) == NULL)
                     return ST_ERROR_MEM;
