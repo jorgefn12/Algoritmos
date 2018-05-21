@@ -92,18 +92,18 @@
 #define MSJ_ERROR_MAX_INSTR_SUPERADO "La cantidad de instrucciones operadas alcanzó el máximo admitido"
 
 /*EJECUCION CODIGO*/
-#define MSJ_COMIENZO_EJECUCION "******** INICIO DE EJECUCION DEL SIMPLETRON *******"
-#define MSJ_FIN_EJECUCION "********* FIN DE EJECUCION DEL SIMPLETRON *********"
+#define MSJ_COMIENZO_EJECUCION "********INICIO DE EJECUCION DEL SIMPLETRON*******"
+#define MSJ_FIN_EJECUCION "*********FIN DE EJECUCION DEL SIMPLETRON*********"
 #define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
 #define MSJ_IMPRIMIR_PALABRA "Contenido de la posición"
 
 /*DUMP*/
-#define DUMP_MSJ_INICIO "\nREGISTROS:"
-#define DUMP_MSJ_ACUMULADOR "acumulador: "
-#define DUMP_MSJ_PROGRAM_COUNTER "program counter: "
-#define DUMP_MSJ_INSTRUCCION "instruccion: "
-#define DUMP_MSJ_OPCODE "opcode: "
-#define DUMP_MSJ_OPERANDO "operando: "
+#define DUMP_MSJ_REGISTROS "\nREGISTROS"
+#define DUMP_MSJ_ACUMULADOR "acumulador"
+#define DUMP_MSJ_PROGRAM_COUNTER "program counter"
+#define DUMP_MSJ_INSTRUCCION "instruccion"
+#define DUMP_MSJ_OPCODE "opcode"
+#define DUMP_MSJ_OPERANDO "operando"
 #define DUMP_MSJ_MEMORIA "\nMEMORIA"
 
 typedef enum {
@@ -577,28 +577,26 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
         }
     }
 
-    puts("dumping..........");
-    fprintf(archivo_salida, "%s\n", DUMP_MSJ_INICIO);
-    fprintf(archivo_salida, "%s: %ld\n", DUMP_MSJ_ACUMULADOR, palabra.acumulador);
-    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_PROGRAM_COUNTER, palabra.program_counter);
-    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_INSTRUCCION, palabra.instruccion);
-    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPCODE, palabra.opcode);
-    fprintf(archivo_salida, "%s: %d\n", DUMP_MSJ_OPERANDO, palabra.operando);
-    fprintf(archivo_salida, "%s\n", DUMP_MSJ_MEMORIA);
+    fprintf(archivo_salida, "%s:\n", DUMP_MSJ_REGISTROS);
+    fprintf(archivo_salida, "%15s: %5ld\n", DUMP_MSJ_ACUMULADOR, palabra.acumulador);
+    fprintf(archivo_salida, "%15s:    %02d\n", DUMP_MSJ_PROGRAM_COUNTER, palabra.program_counter);
+    fprintf(archivo_salida, "%15s: %+5d\n", DUMP_MSJ_INSTRUCCION, palabra.instruccion);
+    fprintf(archivo_salida, "%15s:    %02d\n", DUMP_MSJ_OPCODE, palabra.opcode);
+    fprintf(archivo_salida, "%15s:    %02d\n", DUMP_MSJ_OPERANDO, palabra.operando);
+    fprintf(archivo_salida, "%s:\n", DUMP_MSJ_MEMORIA);
 
 
     for (i = 0; i < 10; i++)
         fprintf(archivo_salida, "%6d", i);
+    /*
     fprintf(archivo_salida, "\n");
+    */
     for (i = 0, j = 0; i < palabra.cantidad_memoria; i++) {
-        if (i % 10 == 0) {
-            if (i != 0)
-                fprintf(archivo_salida, "\n");
-            fprintf(archivo_salida, "%d", j * 10);
+        if (i % 10 == 0){
+        	fprintf(archivo_salida, "\n%2d",j*10);
             j++;
         }
-
-        fprintf(archivo_salida, "%6d",palabra.memoria[i]);
+        fprintf(archivo_salida, " %+05d",palabra.memoria[i]);
     }
     puts("\n");
 
@@ -708,8 +706,9 @@ status_t ejecutar_codigo(palabras_s * palabra){
                 palabra->program_counter = palabra->operando -1;
                 break;
             case JMPNEG:
-                if (palabra->acumulador < 0)
+                if (palabra->acumulador < 0){
                     palabra->program_counter = palabra->operando -1;
+                }
                 break;
             case JMPZERO:
                 if (!palabra->acumulador)
@@ -735,3 +734,16 @@ status_t ejecutar_codigo(palabras_s * palabra){
     puts(MSJ_FIN_EJECUCION);
     return ST_ERROR_MAX_INSTR_SUPERADO;
 }
+/*
+void imprimir_registros(palabras_s* palabra){
+	size_t static i;
+
+	printf("\nIMPRIMIENDO %ld\n", i++);
+	printf("acumulador = %ld\n", palabra->acumulador);
+	printf("program_counter = %d\n", palabra->program_counter);
+	printf("instruccion = %d\n", palabra->instruccion);
+	printf("opcode = %d\n", palabra->opcode);
+	printf("operando = %d\n", palabra->operando);
+}
+
+*/
