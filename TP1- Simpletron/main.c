@@ -511,13 +511,15 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
             /*Pido memoria para guardar una palabra*/
             palabras->memoria[i] = strtol(palabra_ingresada, &pch, 10);
 
-            if (strlen(pch) == 0)
-                fprintf(stdout, "%s\n", MSJ_ERROR_INGRESO_PALABRA);
-            else {
+            if (strlen(pch) == 1) {
                 i++;
                 if ((palabras->memoria = (int*) realloc(palabras->memoria, sizeof (int)*(i + 1))) == NULL)
                     return ST_ERROR_MEM;
 
+                printf("%s ", MSJ_INGRESO_PALABRA);
+                fgets(palabra_ingresada, MAX_STR, stdin);
+            } else {
+                fprintf(stdout, "%s\n", MSJ_ERROR_INGRESO_PALABRA);
                 printf("%s ", MSJ_INGRESO_PALABRA);
                 fgets(palabra_ingresada, MAX_STR, stdin);
             }
