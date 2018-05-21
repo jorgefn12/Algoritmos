@@ -1,13 +1,10 @@
 correcciones de codigo/ejecucion
-linea 188 y 192, liberar memoria (si la pidio) y retornar fallo.
-linea 404 retornar directamente? Ambas son validas, me parece que conviene dejarlo. Discutir
+linea 188 y 192  retornar fallo. /*Preguntar*/
 
-linea 406 y 415 no usan el mismo criterio, en uno se abre el archivo y se carga la estructura,
-	en el otro se carga directamente (se abre dentro de la funcion).
+linea 424 se puede pasar una copia de puntero /* Testear, no esta funcionando*/
 
-linea 424 se puede pasar una copia de puntero
-linea 425 "char * pch, *linea" no sería "char * pch, linea"???
 linea 438,449 ST_ERROR_MEM para ser mas especificos con el error.
+
 linea 441 validar que fgets returne NULL.
 
 446: validar strtol
@@ -33,10 +30,10 @@ de linea 497 a 510: me parece que es mejor usar do while. para meter todo dentro
 
 588 anidar condiciones en una sola
 
-En las funciones para imprimir dump 
+En las funciones para imprimir dump
 -> mandar un puntero o copia de puntero a estructura en lugar de copia de estructura.
 Validar punteros
-Validar con un temp que lo que retorna strtol este entre los rangos, 
+Validar con un temp que lo que retorna strtol este entre los rangos,
 	para que no haya error al convertir a entero (eg. que lo tome como un negativo)
 Tratar de reparar breaks y i = argc.
 Validar reallocs
@@ -48,7 +45,7 @@ Ventaja de no rellenar:
 1)Un usuario quiere añadir un instructivo gigante, pero no sabe cuanta memoria pide -> agrega un numero muy grande en -m. Pero no le interesa el resto. Aquí no se deberia agregar ceros.
 2)Si se ingresa por stdin, es muy probable que no sepa cuanta memoria utilizar especificamente -> se excede con -m.
 
-Ventaja de rellenar. 
+Ventaja de rellenar.
 1)Un usuario sabe que necesita varias lineas de codigo para variables, en lugar de agregar muchos ceros al codigo puede excederse con -m sabiendo que se van a rellenar.
 
 Cambiar orden de TRUE,FALSE.
