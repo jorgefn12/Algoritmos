@@ -1,14 +1,13 @@
 correcciones de codigo/ejecucion
-linea 188 y 192, deberia liberar memoria (si la pidio) y retornar fallo.
+linea 188 y 192, liberar memoria (si la pidio) y retornar fallo.
 linea 404 retornar directamente? Ambas son validas, me parece que conviene dejarlo. Discutir
 
 linea 406 y 415 no usan el mismo criterio, en uno se abre el archivo y se carga la estructura,
 	en el otro se carga directamente (se abre dentro de la funcion).
 
-linea 424 porque pasar un puntero doble a estructura si la direccion del puntero no se modifica.
-	podes pasar una copia de puntero (como hiciste con las demas funciones) y seria lo mismo.
-linea 425 "char * pch, *linea" no sería "char * pch, linea"???
-linea 438,449 deberia ser ST_ERROR_MEM para ser mas especificos con el error.
+linea 424 se puede pasar una copia de puntero
+linea 425 "char * pch, *linea" no serÃ­a "char * pch, linea"???
+linea 438,449 ST_ERROR_MEM para ser mas especificos con el error.
 linea 441 validar que fgets returne NULL.
 
 446: validar strtol
@@ -19,10 +18,9 @@ linea 469 validar malloc
 
 linea 472 validar realloc en caso de fallos
 
-linea 479 y 472 si se terminan rellenando la memoria para que iguale cantidad_memoria-> deberia
-usarse malloc directamente sin realloc.
+linea 479 y 472 si se terminan rellenando la memoria para que iguale cantidad_memoria-> usar malloc directamente sin realloc.
 
-linea 430 y 492 porque no utilizar un arreglo estatico, va a tener el mismo tamaño y se destruye al finalizar la funcion
+linea 430 y 492 utilizar un arreglo estatico, va a tener el mismo tamaÃ±o y se destruye al finalizar la funcion ??
 linea 494 (int*) malloc(sizeof (int*))) == NULL) deberia ser (int*) malloc(sizeof (int))) == NULL)???
 
 
@@ -47,7 +45,7 @@ El tratamiento con stdin y archivo bin es distinto (rellenar con 0 cuando no se 
 Discutir si rellenar o no:
 Agregar 0s no afecta la ejecucion.
 Ventaja de no rellenar:
-1)Un usuario quiere añadir un instructivo gigante, pero no sabe cuanta memoria pide -> agrega un numero muy grande en -m. Pero no le interesa el resto. Aquí no se deberia agregar ceros.
+1)Un usuario quiere aÃ±adir un instructivo gigante, pero no sabe cuanta memoria pide -> agrega un numero muy grande en -m. Pero no le interesa el resto. AquÃ­ no se deberia agregar ceros.
 2)Si se ingresa por stdin, es muy probable que no sepa cuanta memoria utilizar especificamente -> se excede con -m.
 
 Ventaja de rellenar. 
