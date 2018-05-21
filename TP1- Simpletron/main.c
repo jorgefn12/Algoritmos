@@ -77,14 +77,16 @@ Al compilar me indicó que faltaba la constante MSJ_ERROR_INGRESO_PALABRA
 #define HALT 45
 
 /*MENSAJES DE AYUDA*/
-#define MSJ_AYUDA_TITULO "------------------------------AYUDA------------------------------"
-#define MSJ_AYUDA_M1 "OPCION |N|: Simpletron tiene una memoria de N palabras. Si no se da el argumento, por omisión tendrá 50 palabras. El maximo es de 200 palabras"
-#define MSJ_AYUDA_I1 "OPCION |ARCHIVO|: El programa se leerá del archivo pasado como opción, en caso contrario, de stdin."
-#define MSJ_AYUDA_IF1 "OPCION |BIN|: El archivo de entrada se entenderá como una secuencia binaria de enteros que representan las palabras que forman el programa."
-#define MSJ_AYUDA_IF2 "OPCION |TXT|: El archivo de entrada se interpretará como secuencia de números, cada uno en una única línea."
-#define MSJ_AYUDA_O1 "OPCION |ARCHIVO|: El dump se hará en el archivo pasado como opción, si no pasa el argumento, el volcado se hará por stdout."
-#define MSJ_AYUDA_OF1 "OPCION |BIN|: El volcado se hará en binario guardando cada elemento de la estructura del Simpletron, además de la memoria."
-#define MSJ_AYUDA_OF2 "OPCION |TXT|: El volcado se hará en formato de texto imprimiendo los registros y la memoria."
+#define MSJ_AYUDA_TITULO "-------------------------------- A Y U D A --------------------------------"
+#define MSJ_AYUDA_M "OPCION |N|: Simpletron tiene una memoria de N palabras. Si no se da el argumento, por omisión tendrá 50 palabras. El máximo es de 200 palabras. No es un argumento obligatorio."
+#define MSJ_AYUDA_I "OPCION |ARCHIVO|: Indica el archivo de entrada, este puede ser un archivo binario, un txt, un lms o se puede ingresar palabras con stdin. Si no se ingresa el argumento, el programa terminará. Es un argumento obligatorio"
+#define MSJ_AYUDA_IF "Indica cómo debe leerse el archivo de entrada, como un texto o un archivo binario. Es un argumento obligatorio"
+#define MSJ_AYUDA_IF_BIN "OPCION |BIN|: Se leerá el archivo bin como un binario."
+#define MSJ_AYUDA_IF_TXT "OPCION |TXT|: Se leerá el archivo bin como un texto."
+#define MSJ_AYUDA_O "OPCION |ARCHIVO|: El dump se hará en el archivo pasado como opción, si no pasa el argumento, el volcado se hará por stdout. No es un argumento obligatorio."
+#define MSJ_AYUDA_OF "Si no se ingresa -o se puede ingresar -of. No es un argumento obligatorio. Si se ingresa cualquier otra opción luego de -of, ocurrirá un error y el programa terminará."
+#define MSJ_AYUDA_OF_BIN "OPCION |BIN|: El dump se imprimirá como un binario."
+#define MSJ_AYUDA_OF_TXT "OPCION |TXT|: El dump se imprime como un texto."
 
 /*MENSAJES DE ERRORES*/
 #define MSJ_MAS_AYUDA "Ingrese -h para mas ayuda"
@@ -563,14 +565,16 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
 }
 
 void imprimir_ayuda() {
-    fprintf(stderr, "%s\n", MSJ_AYUDA_TITULO);
-    fprintf(stderr, "%s    %s\n\n", CLA_M, MSJ_AYUDA_M1);
-    fprintf(stderr, "%s    %s\n\n", CLA_I, MSJ_AYUDA_I1);
-    fprintf(stderr, "%s   %s\n", CLA_IF, MSJ_AYUDA_IF1);
-    fprintf(stderr, "      %s\n\n", MSJ_AYUDA_IF2);
-    fprintf(stderr, "%s    %s\n\n", CLA_O, MSJ_AYUDA_O1);
-    fprintf(stderr, "%s   %s\n", CLA_OF, MSJ_AYUDA_OF1);
-    fprintf(stderr, "      %s\n\n", MSJ_AYUDA_OF2);
+    printf("%s\n\n", MSJ_AYUDA_TITULO);
+    printf("%s    %s\n\n", CLA_M, MSJ_AYUDA_M);
+    printf("%s    %s\n\n", CLA_I, MSJ_AYUDA_I);
+    printf("%s   %s\n", CLA_IF, MSJ_AYUDA_IF);
+    printf("      %s\n", MSJ_AYUDA_IF_BIN);
+    printf("      %s\n\n", MSJ_AYUDA_IF_TXT);
+    printf("%s    %s\n\n", CLA_O, MSJ_AYUDA_O);
+    printf("%s   %s\n", CLA_OF, MSJ_AYUDA_OF);
+    printf("      %s\n", MSJ_AYUDA_OF_BIN);
+    printf("      %s\n\n", MSJ_AYUDA_OF_TXT);
 }
 
 status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabras_s palabra) {
