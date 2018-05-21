@@ -705,24 +705,24 @@ status_t ejecutar_codigo(palabras_s * palabra){
                 palabra->acumulador *= palabra->memoria[palabra->operando];
                 break;
             case JMP:
-                palabra->program_counter = palabra->operando;
+                palabra->program_counter = palabra->operando -1;
                 break;
             case JMPNEG:
                 if (palabra->acumulador < 0)
-                    palabra->program_counter = palabra->operando;
+                    palabra->program_counter = palabra->operando -1;
                 break;
             case JMPZERO:
                 if (!palabra->acumulador)
-                    palabra->program_counter = palabra->operando;
+                    palabra->program_counter = palabra->operando -1;
                 break;
             case JNZ:
                 if(palabra->acumulador)
-                    palabra->program_counter = palabra->operando;
+                    palabra->program_counter = palabra->operando -1;
                 break;
             case DJNZ:
                 palabra->acumulador--;
                 if(palabra->acumulador)
-                    palabra->program_counter = palabra->operando;
+                    palabra->program_counter = palabra->operando -1;
                 break;
             case HALT:
                 puts(MSJ_FIN_EJECUCION);
