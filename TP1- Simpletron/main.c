@@ -1,3 +1,19 @@
+/*
+Se agrego:
+[En las constantes]
+MAX_INGRESOS
+ST_ERROR_MAX_INGRESOS_SUPERADO
+MSJ_ERROR_MAX_INGRESOS_SUPERADO
+MSJ_NUEVO_INGRESO
+
+[En el codigo de la función ejecutar_codigo()]
+Modificaciones de ejecutar codigo para darle nuevos intentos al usuario para ingreso de datos
+
+Falta:
+[En el código de la función cargar_estructura_stdin()]
+Al compilar me indicó que faltaba la constante MSJ_ERROR_INGRESO_PALABRA
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +37,7 @@
 #define MIN_PALABRA -9999
 #define MAX_PALABRA 9999
 #define MAX_INSTRICCIONES 200
+#define MAX_INGRESOS 5
 #define MAX_STR 200
 #define CANT_MAX_M 200
 
@@ -90,11 +107,13 @@
 #define MSJ_ERROR_CAD_NO_LEIDA "No pudo leer el valor ingresado"
 #define MSJ_ERROR_OPCODE_INVALIDO "El código de instrucción no es válido"
 #define MSJ_ERROR_MAX_INSTR_SUPERADO "La cantidad de instrucciones operadas alcanzó el máximo admitido"
+#define MSJ_ERROR_MAX_INGRESOS_SUPERADO "La cantidad de ingresos alcanzó el máximo admitido"
 
 /*EJECUCION CODIGO*/
 #define MSJ_COMIENZO_EJECUCION "********INICIO DE EJECUCION DEL SIMPLETRON*******"
 #define MSJ_FIN_EJECUCION "*********FIN DE EJECUCION DEL SIMPLETRON*********"
 #define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
+#define MSJ_NUEVO_INGRESO "Ingrese nuevamente."
 #define MSJ_IMPRIMIR_PALABRA "Contenido de la posición"
 
 /*DUMP*/
@@ -126,7 +145,8 @@ typedef enum {
     ST_ERROR_CAD_NO_LEIDA,
     ST_ERROR_OPCODE_INVALIDO,
     ST_ERROR_MAX_INSTR_SUPERADO,
-    ST_ERROR_ESCRIBIR_BIN
+    ST_ERROR_ESCRIBIR_BIN,
+    ST_ERROR_MAX_INGRESOS_SUPERADO
 } status_t;
 
 typedef enum {
@@ -388,6 +408,9 @@ void imprimir_errores(status_t status) {
             break;
         case ST_ERROR_ESCRIBIR_BIN:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_ESCRIBIR_BIN, MSJ_MAS_AYUDA);
+            break;
+	case ST_ERROR_MAX_INGRESOS_SUPERADO:
+	    fprintf(stderr, "%s. %s\n", MSJ_ERROR_MAX_INGRESOS_SUPERADO, MSJ_MAS_AYUDA);
             break;
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
@@ -659,19 +682,24 @@ status_t ejecutar_codigo(palabras_s * palabra){
 
         switch(palabra->opcode){
             case LEER:
-                printf(MSJ_INGRESO_PALABRA);
-                if (fgets(aux, MAX_STR, stdin) == NULL){
-                    puts(MSJ_FIN_EJECUCION);
-                    return ST_ERROR_CAD_NO_LEIDA;
+                for(i = 0; i < MAX_INGRESOS; i++){
+                    printf("%s ",MSJ_INGRESO_PALABRA);
+                    if(fgets(aux, MAX_STR, stdin) == NULL){
+                        fprintf(stdout, "%s %s\n", MSJ_NUEVO_INGRESO, MSJ_ERROR_CAD_NO_LEIDA);
+                        continue;
+                    }
+                    if((temp = strtol(aux, &p, 10)) > MAX_PALABRA || temp < MIN_PALABRA){
+                        fprintf(stdout, "%s %s\n", MSJ_NUEVO_INGRESO, MSJ_ERROR_PALABRA_FUERA_DE_RANGO);
+                        continue;
+                    }
+                    if(*p != '\n' && *p != '\0' && *p != EOF){
+                        fprintf(stdout, "%s %s\n", MSJ_NUEVO_INGRESO, MSJ_ERROR_CAD_NO_ES_ENTERO);
+                        continue;
+                    }
+                    break;
                 }
-                if( (temp = strtol(aux, &p, 10)) < MIN_PALABRA || temp > MAX_PALABRA){
-                    puts(MSJ_FIN_EJECUCION);
-                    return ST_ERROR_PALABRA_FUERA_DE_RANGO;
-                }
-                if(*p != '\n' && *p != '\0' && *p != EOF){
-                    puts(MSJ_FIN_EJECUCION);
-                    return ST_ERROR_CAD_NO_ES_ENTERO;
-                }
+                if(i == MAX_INGRESOS)
+                  return ST_ERROR_MAX_INGRESOS_SUPERADO;
                 palabra->memoria[palabra->operando] = temp;
                 break;
             case ESCRIBIR:
