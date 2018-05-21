@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -155,7 +156,7 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
 /*Carga de estructura*/
 status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra);
 status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrada);
-status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin);
+status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada);
 status_t cargar_estructura_stdin(palabras_s *palabras);
 /*Imprimir*/
 void imprimir_ayuda();
@@ -384,9 +385,7 @@ void imprimir_errores(status_t status) {
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
     }
 }
-
 status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra) {
-    FILE *archivo_entrada;
     status_t status;
 
     switch (tipo_archivo_entrada) {
@@ -400,10 +399,7 @@ status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo
             }
 
             /*ENTRADA archivo*/
-            if ((archivo_entrada = fopen(nombre_archivo_entrada, "rb")) == NULL)
-                status = ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-            else
-                status = cargar_estructura_bin(palabra, archivo_entrada);
+                status = cargar_estructura_bin(palabra, nombre_archivo_entrada);
 
             break;
         case ARCHIVO_TXT:
@@ -420,7 +416,6 @@ status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo
 
     return status;
 }
-
 status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrada) {
     char * pch, *linea;
     status_t status = ST_OK;
@@ -435,7 +430,7 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
         return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
 
     if (((*palabra)->memoria = (int*) malloc(sizeof (int))) == NULL)
-        return ST_ERROR_PTR_NULO;
+        return ST_ERROR_MEM;
 
     while (!feof(archivo_entrada) && (i < (*palabra)->cantidad_memoria)) {
         if ((fgets(linea, MAX_STR, archivo_entrada)) != NULL) {
@@ -446,7 +441,7 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
             (*palabra)->memoria[i] = strtol(linea, &pch, 10);
             i += 1; /*Poner uno en define?*/
             if (((*palabra)->memoria = (int*) realloc((*palabra)->memoria, sizeof (int)*(i + 1))) == NULL)
-                return ST_ERROR_PTR_NULO;
+                return ST_ERROR_MEM;
         }
     }
 
@@ -462,12 +457,16 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
     return status;
 }
 
-status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin) {
+status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada) {
     /*El archivo esta compuesto por enteros*/
     int i = 0,j;
+    FILE * archivo_entrada_bin;
 
     palabra->memoria = (int*) malloc(sizeof (int));
 
+    if ((archivo_entrada_bin = fopen(nombre_archivo_entrada, "rb")) == NULL)
+                return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
+    
     while (!feof(archivo_entrada_bin) && (i < palabra->cantidad_memoria)) {
         palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(i + 1));
         if ((fread(&palabra->memoria[i], sizeof (int), 1, archivo_entrada_bin)) == 1)
@@ -655,7 +654,9 @@ status_t ejecutar_codigo() {
         }
 
         switch (opcode) {
-            case LEER:
+            case 
+                
+                R:
                 printf(MSJ_INGRESO_PALABRA);
                 if (fgets(aux, MAX_STR, stdin) == NULL) {
                     puts(MSJ_FIN_EJECUCION);
