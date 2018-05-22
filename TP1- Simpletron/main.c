@@ -9,6 +9,7 @@ Cambie MAX_INSTRUCCIONES a 5000
 
 [En el codigo de la función ejecutar_codigo()]
 Modificaciones de ejecutar codigo para darle nuevos intentos al usuario para ingreso de datos
+Se cambia arreglo estático por uno dinámico, y se libera memoria al finalizar.
 
 Falta:
 [En el código de la función cargar_estructura_stdin()]
@@ -214,8 +215,8 @@ int main(int argc, char** argv) {
     if (status != ST_OK)
         imprimir_errores(status);
     else {
-    	status = ejecutar_codigo(&palabra);
-    	if (status != ST_OK)
+        status = ejecutar_codigo(&palabra);
+        if (status != ST_OK)
             imprimir_errores(status);
 
         status = dump(tipo_archivo_salida, archivo_salida, palabra);
@@ -411,8 +412,8 @@ void imprimir_errores(status_t status) {
         case ST_ERROR_ESCRIBIR_BIN:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_ESCRIBIR_BIN, MSJ_MAS_AYUDA);
             break;
-	case ST_ERROR_MAX_INGRESOS_SUPERADO:
-	    fprintf(stderr, "%s. %s\n", MSJ_ERROR_MAX_INGRESOS_SUPERADO, MSJ_MAS_AYUDA);
+    case ST_ERROR_MAX_INGRESOS_SUPERADO:
+        fprintf(stderr, "%s. %s\n", MSJ_ERROR_MAX_INGRESOS_SUPERADO, MSJ_MAS_AYUDA);
             break;
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
@@ -631,7 +632,7 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
     */
     for (i = 0, j = 0; i < palabra.cantidad_memoria; i++) {
         if (i % 10 == 0){
-        	fprintf(archivo_salida, "\n%2d",j*10);
+            fprintf(archivo_salida, "\n%2d",j*10);
             j++;
         }
         fprintf(archivo_salida, " %+05d",palabra.memoria[i]);
@@ -660,19 +661,23 @@ status_t imprimir_dump_bin(palabras_s palabra, char *nombre_archivo_salida, arch
 }
 
 status_t ejecutar_codigo(palabras_s * palabra){
-	char aux[MAX_STR]; /*Cadena auxiliar en donde se valida lo que ingresa el usuario*/
+    char * aux; /*Cadena auxiliar en donde se valida lo que ingresa el usuario*/
     long temp; /*Guardo enteros para validar antes de guardarlos en memoria*/
     char* p; /*Puntero auxiliar*/
     size_t i;
 
-   	/*Valida que los enteros estén dentro del rango*/
+    if((aux = (char*)malloc(sizeof(char)*MAX_STR)) == NULL)
+        return ST_ERROR_MEM;
+
+    /*Valida que los enteros estén dentro del rango*/
     for(i = 0; i < palabra->cantidad_memoria; i++){
         if(palabra->memoria[i] < MIN_PALABRA || palabra->memoria[i] > MAX_PALABRA){
+            free(aux);
             return ST_ERROR_PALABRA_FUERA_DE_RANGO;
         }
     }
 
-	/*Comienza ejecución*/
+    /*Comienza ejecución*/
     puts(MSJ_COMIENZO_EJECUCION);
     for(palabra->program_counter = 0; palabra->program_counter < MAX_INSTRICCIONES; palabra->program_counter++){
         palabra->instruccion = palabra->memoria[palabra->program_counter];
@@ -681,6 +686,7 @@ status_t ejecutar_codigo(palabras_s * palabra){
         /*valida que el operando pueda ser accedido*/
         if(palabra->operando > palabra->cantidad_memoria || palabra->operando < INIT_INSTRUCCIONES){
             puts(MSJ_FIN_EJECUCION);
+            free(aux);
             return ST_ERROR_SEGMENTATION_FAULT;
         }
 
@@ -702,8 +708,10 @@ status_t ejecutar_codigo(palabras_s * palabra){
                     }
                     break;
                 }
-                if(i == MAX_INGRESOS)
-                  return ST_ERROR_MAX_INGRESOS_SUPERADO;
+                if(i == MAX_INGRESOS){
+                    free(aux);
+                    return ST_ERROR_MAX_INGRESOS_SUPERADO;
+                }
                 palabra->memoria[palabra->operando] = temp;
                 break;
             case ESCRIBIR:
@@ -715,6 +723,7 @@ status_t ejecutar_codigo(palabras_s * palabra){
             case GUARDAR:
                 if(palabra->acumulador < MIN_PALABRA || palabra->acumulador > MAX_PALABRA){
                     puts(MSJ_FIN_EJECUCION);
+                    free(aux);
                     return ST_ERROR_PALABRA_FUERA_DE_RANGO;
                 }
                 palabra->memoria[palabra->operando] = palabra->acumulador;
@@ -722,6 +731,7 @@ status_t ejecutar_codigo(palabras_s * palabra){
             case PCARGAR:
                 if(palabra->memoria[palabra->operando] > palabra->cantidad_memoria || palabra->memoria[palabra->operando] < INIT_INSTRUCCIONES){
                     puts(MSJ_FIN_EJECUCION);
+                    free(aux);
                     return ST_ERROR_SEGMENTATION_FAULT;
                 }
                 palabra->acumulador = palabra->memoria[palabra->memoria[palabra->operando]];
@@ -729,6 +739,7 @@ status_t ejecutar_codigo(palabras_s * palabra){
             case PGUARDAR:
                 if(palabra->memoria[palabra->operando] > palabra->cantidad_memoria || palabra->memoria[palabra->operando] < INIT_INSTRUCCIONES){
                     puts(MSJ_FIN_EJECUCION);
+                    free(aux);
                     return ST_ERROR_SEGMENTATION_FAULT;
                 }
                 palabra->memoria[palabra->memoria[palabra->operando]] = palabra->acumulador;
@@ -768,25 +779,28 @@ status_t ejecutar_codigo(palabras_s * palabra){
                 break;
             case HALT:
                 puts(MSJ_FIN_EJECUCION);
+                free(aux);
                 return ST_OK;
             default:
                 puts(MSJ_FIN_EJECUCION);
+                free(aux);
                 return ST_ERROR_OPCODE_INVALIDO;
         }
     }
     puts(MSJ_FIN_EJECUCION);
+    free(aux);
     return ST_ERROR_MAX_INSTR_SUPERADO;
 }
 /*
 void imprimir_registros(palabras_s* palabra){
-	size_t static i;
+    size_t static i;
 
-	printf("\nIMPRIMIENDO %ld\n", i++);
-	printf("acumulador = %ld\n", palabra->acumulador);
-	printf("program_counter = %d\n", palabra->program_counter);
-	printf("instruccion = %d\n", palabra->instruccion);
-	printf("opcode = %d\n", palabra->opcode);
-	printf("operando = %d\n", palabra->operando);
+    printf("\nIMPRIMIENDO %ld\n", i++);
+    printf("acumulador = %ld\n", palabra->acumulador);
+    printf("program_counter = %d\n", palabra->program_counter);
+    printf("instruccion = %d\n", palabra->instruccion);
+    printf("opcode = %d\n", palabra->opcode);
+    printf("operando = %d\n", palabra->operando);
 }
 
 */
