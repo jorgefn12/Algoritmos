@@ -78,7 +78,7 @@ Al compilar me indicó que faltaba la constante MSJ_ERROR_INGRESO_PALABRA
 
 /*MENSAJES DE AYUDA*/
 #define MSJ_AYUDA_TITULO "-------------------------------- A Y U D A --------------------------------"
-#define MSJ_AYUDA_M "OPCION |N|: Simpletron tiene una memoria de N palabras. Si no se da el argumento, por omisión tendrá 50 palabras. El máximo es de 200 palabras. No es un argumento obligatorio."
+#define MSJ_AYUDA_M "OPCION |N|: Simpletron tiene una memoria de N palabras. Si no se da el argumento, por omisión tendrá 50 palabras. No es un argumento obligatorio."
 #define MSJ_AYUDA_I "OPCION |ARCHIVO|: Indica el archivo de entrada, este puede ser un archivo binario, un txt, un lms o se puede ingresar palabras con stdin. Si no se ingresa el argumento, el programa terminará. Es un argumento obligatorio"
 #define MSJ_AYUDA_IF "Indica cómo debe leerse el archivo de entrada, como un texto o un archivo binario. Es un argumento obligatorio"
 #define MSJ_AYUDA_IF_BIN "OPCION |BIN|: Se leerá el archivo bin como un binario."
