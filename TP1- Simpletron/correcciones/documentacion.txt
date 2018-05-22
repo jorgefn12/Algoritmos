@@ -1,0 +1,48 @@
+***********************************************************************************************
+int main(int argc, char** argv)
+
+Este programa recibe un código escrito en lenguaje de Máquina de la Simpletron (LMS), los trata
+de ejecutar según las especificaciones del LMS, y al finalizar (exitosamente o por algún error)
+devuelve un volcado de de la aplicación "dump", mostrando todos sus parámetros y el estado de
+la memoria. 
+Retorna EXIT_SUCCESS si no hubo errores en el procesamiento. De lo contrario, retorna EXIT_FAILURE.
+
+Mediante argumentos de línea de orden (CLA), es posible configurar la cantidad de memoria que 
+dispone el Simpletron, el archivo de salida donde se realizará el "dump", el formato de salida, 
+el archivo de entrada de donde se obtendrá el código LMS, y el formato de la entrada.
+
+***********************************************************************************************
+validacion_cla()
+
+DECLARACIÓN
+
+status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f);
+
+DESCRIPCION
+
+Esta función se encuentra en la biblioteca ".h" y valida los CLA ingresados por el usuario al 
+invocar la función main por terminal. Si no ocurrió un problema en el procesamiento, la función 
+guarda los argumentos pasados a main, en los punteros m, archivo_i, tipo_archivo_i, archivo_f y 
+tipo_archivo_f.
+
+PARAMETROS
+
+[argc] - Contiene el número de argumentos pasados al programa.
+[argv] - Es un vector unidimensional. Cada una de sus posiciones contiene uno de los argumentos pasados al programa. 
+[m] - Es la posición en donde se guardará la cantidad de memoria solicitada al programa.
+[archivo_i] - Es la posición en donde se guardará el nombre del archivo de entrada.
+[tipo_archivo_i] - Es la posición en donde se guardará el tipo de archivo de entrada.
+[archivo_f] - Es la posición en donde se guardará el nombre del archivo de salida.
+[tipo_archivo_f] - Es la posición en donde se guardará el tipo de archivo de salida.
+
+VALOR DE RETORNO
+
+Retorna un status_t indicando el estado de la función al finalizar el procesamiento.
+
+***********************************************************************************************
+leer_archivo()
+
+DECLARACION
+
+status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra);
+
