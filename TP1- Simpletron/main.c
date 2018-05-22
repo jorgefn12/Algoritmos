@@ -497,14 +497,20 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
     return status;
 }
 
-status_t cargar_estructura_bin(palabras_s* palabra, FILE* archivo_entrada_bin) {
+status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada) {
     /*El archivo esta compuesto por enteros*/
-    int i = 0,j;
+    int i = 0, j;
+    FILE * archivo_entrada_bin;
 
-    palabra->memoria = (int*) malloc(sizeof (int));
+    if((palabra->memoria = (int*) malloc(sizeof (int)))==NULL)
+        return ST_ERROR_MEM;
+
+    if ((archivo_entrada_bin = fopen(nombre_archivo_entrada, "rb")) == NULL)
+        return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
 
     while (!feof(archivo_entrada_bin) && (i < palabra->cantidad_memoria)) {
-        palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(i + 1));
+        if((palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(i + 1)))==NULL)
+            return ST_ERROR_MEM;
         if ((fread(&palabra->memoria[i], sizeof (int), 1, archivo_entrada_bin)) == 1)
             i++;
     }
@@ -526,7 +532,7 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
 
     if ((palabra_ingresada = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
         return ST_ERROR_MEM;
-    if ((palabras->memoria = (int*) malloc(sizeof (int*))) == NULL)
+    if ((palabras->memoria = (int*) malloc(sizeof (int))) == NULL)
         return ST_ERROR_MEM;
 
     printf("%s ", MSJ_INGRESO_PALABRA);
