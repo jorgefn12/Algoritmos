@@ -5,6 +5,7 @@ MAX_INGRESOS
 ST_ERROR_MAX_INGRESOS_SUPERADO
 MSJ_ERROR_MAX_INGRESOS_SUPERADO
 MSJ_NUEVO_INGRESO
+Cambie MAX_INSTRUCCIONES a 5000
 
 [En el codigo de la función ejecutar_codigo()]
 Modificaciones de ejecutar codigo para darle nuevos intentos al usuario para ingreso de datos
@@ -36,7 +37,7 @@ Al compilar me indicó que faltaba la constante MSJ_ERROR_INGRESO_PALABRA
 #define INIT_INSTRUCCIONES 0
 #define MIN_PALABRA -9999
 #define MAX_PALABRA 9999
-#define MAX_INSTRICCIONES 200
+#define MAX_INSTRICCIONES 5000
 #define MAX_INGRESOS 5
 #define MAX_STR 200
 
