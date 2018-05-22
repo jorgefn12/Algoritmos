@@ -39,7 +39,6 @@ Al compilar me indicó que faltaba la constante MSJ_ERROR_INGRESO_PALABRA
 #define MAX_INSTRICCIONES 200
 #define MAX_INGRESOS 5
 #define MAX_STR 200
-#define CANT_MAX_M 200
 
 /*ARGUMENTOS*/
 #define CLA_AYUDA "-h"
@@ -254,7 +253,7 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
         if (strcmp(argv[i], CLA_M) == 0) {
             *m = strtol(argv[i + 1], &p, 10);
             /* Se comprueba que sea un entero positivo menor al maximo*/
-            if (*m > CANT_MAX_M || *m < 0) {
+            if (*m < 0) {
                 return ST_ERROR_M_INVALIDO;
             }
             break;
