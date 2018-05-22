@@ -3,33 +3,17 @@ linea 188 y 192  retornar fallo. /*Preguntar*/
 
 linea 424 se puede pasar una copia de puntero /* Testear, no esta funcionando*/
 
-linea 438,449 ST_ERROR_MEM para ser mas especificos con el error.
-
 linea 441 validar que fgets returne NULL.
 
-446: validar strtol
 447:incrementar solo si lee bien.
-
-
-linea 469 validar malloc
-
-linea 472 validar realloc en caso de fallos
 
 linea 479 y 472 si se terminan rellenando la memoria para que iguale cantidad_memoria-> usar malloc directamente sin realloc.
 
-linea 430 y 492 utilizar un arreglo estatico, va a tener el mismo tamaño y se destruye al finalizar la funcion ??
-linea 494 (int*) malloc(sizeof (int*))) == NULL) deberia ser (int*) malloc(sizeof (int))) == NULL)???
-
-
-linea 503: agregar validacion para que si no ingreso un numero, pueda intentar nuevamente
-
-linea 505: incrementar i solamente si leyo correctamente -> agregar un if.
+linea 430 y 492 utilizar un arreglo estatico, va a tener el mismo tamaño y se destruye al finalizar la funcion ?
 
 de linea 497 a 510: me parece que es mejor usar do while. para meter todo dentro de un ciclo, y ademas
 	se puede evitar el break poniendo una condicion mas legible en el ciclo.
-
-588 anidar condiciones en una sola
-
+	
 En las funciones para imprimir dump
 -> mandar un puntero o copia de puntero a estructura en lugar de copia de estructura.
 Validar punteros
