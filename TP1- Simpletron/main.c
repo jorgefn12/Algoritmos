@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
     if (status != ST_OK){
         imprimir_errores(status);
         dump(tipo_archivo_salida, archivo_salida, palabra);
+        free(palabra.memoria);
         return EXIT_FAILURE;
     }
     status = dump(tipo_archivo_salida, archivo_salida, palabra);
