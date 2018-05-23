@@ -3,6 +3,13 @@
 #include <string.h>
 #include "header.h"
 
+/*
+La función ejecuta el código lms según las especificaciones del lenguaje.
+Recibe como argumento un puntero a estructura, de donde obtendrá el código cargado a memoria.
+Al finalizar, devuelve por nombre el estado de la función y por la interfaz la estructura del
+simpletron con la memoria modificada y los últimos registros utilizados.
+*/
+
 status_t ejecutar_codigo(palabras_s * palabra){
     char * aux; /*Cadena auxiliar en donde se valida lo que ingresa el usuario*/
     long temp; /*Guardo enteros para validar antes de guardarlos en memoria*/
