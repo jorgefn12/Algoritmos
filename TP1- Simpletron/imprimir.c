@@ -66,6 +66,10 @@ void imprimir_errores(status_t status) {
     }
 }
 
+/*
+Este procedimiento imprime por stderr ayuda acerca del formato en que se deben escribir los CLA
+del programa.
+*/
 void imprimir_ayuda() {
     fprintf(stderr, "%s\n", MSJ_AYUDA_TITULO);
     fprintf(stderr, "%s    %s\n\n", CLA_M, MSJ_AYUDA_M1);
