@@ -58,6 +58,9 @@ void imprimir_errores(status_t status) {
         case ST_ERROR_ESCRIBIR_BIN:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_ESCRIBIR_BIN, MSJ_MAS_AYUDA);
             break;
+        case ST_ERROR_MAX_INGRESOS_SUPERADO:
+		    fprintf(stderr, "%s. %s\n", MSJ_ERROR_MAX_INGRESOS_SUPERADO, MSJ_MAS_AYUDA);
+	       	break;
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
     }
