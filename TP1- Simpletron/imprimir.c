@@ -3,6 +3,11 @@
 #include <string.h>
 #include "header.h"
 
+/*
+Este procedimiento se encarga de imprimir por stderr el estado en que se finalizaron las demás
+funciones y un mensaje de ayuda adicional.
+Recibe un status_t.
+*/
 void imprimir_errores(status_t status) {
     switch (status) {
         case ST_ERROR_CANT_ARG:
