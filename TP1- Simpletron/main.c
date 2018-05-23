@@ -28,12 +28,12 @@ int main(int argc, char** argv) {
     }
 
     /*3) Ejecutar codigo*/
-    /*
-            status = ejecutar_codigo(&palabra);
-            if (status != ST_OK)
-                imprimir_errores(status);
-            else
-     */
+    status = ejecutar_codigo(&palabra);
+    if (status != ST_OK){
+        imprimir_errores(status);
+        dump(tipo_archivo_salida, archivo_salida, palabra);
+        return EXIT_FAILURE;
+    }
     status = dump(tipo_archivo_salida, archivo_salida, palabra);
     if (status != ST_OK)
         imprimir_errores(status);
