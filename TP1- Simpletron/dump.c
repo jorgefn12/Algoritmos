@@ -12,7 +12,7 @@ Retorna por el nombre el estado de la función.
 */
 status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabras_s palabra) {
     status_t status = ST_OK;
-
+    /*Selecciona en base al argumento -of*/
     switch (tipo_archivo_salida) {
         case ARCHIVO_TXT:
             status = imprimir_dump_por_stdout_o_txt(palabra, nombre_archivo_salida, tipo_archivo_salida);
@@ -24,7 +24,7 @@ status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabr
             status = imprimir_dump_bin(palabra, nombre_archivo_salida, tipo_archivo_salida);
             break;
         case ARCHIVO_DEFAULT:
-            /*No se ingreso -o ni -of*/
+            /*No se ingreso -o ni -of | Se imprime en ṕor stdout en formato txt*/
             status = imprimir_dump_por_stdout_o_txt(palabra, nombre_archivo_salida, tipo_archivo_salida);
             break;
         default:
