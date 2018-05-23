@@ -43,6 +43,12 @@ status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo
     return status;
 }
 
+/*
+Esta función carga la memoria del simpletron desde un archivo con formato de texto.
+La función recibe un puntero a estructura (simpletron) y una cadena con el nombre del 
+archivo de entrada.
+Retorna por el nombre el estado de la función.
+*/
 status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrada) {
     char * pch, *linea;
     status_t status = ST_OK;
