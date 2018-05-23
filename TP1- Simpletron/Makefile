@@ -3,7 +3,7 @@ CFLAGS=-ansi -Wall -pedantic
 OBJECTS=cargar_estructura.o dump.o ejecutar_codigo.o imprimir.o main.o validaciones.o
 
 tp1: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o tp1
+	$(CC) $(CFLAGS) $(OBJECTS) -o simpletron
 	
 main.o: main.c header.h
 	$(CC) -c main.c
