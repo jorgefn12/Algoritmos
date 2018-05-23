@@ -30,7 +30,7 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
         if (strcmp(argv[i], CLA_M) == 0) {
             *m = strtol(argv[i + 1], &p, 10);
             /* Se comprueba que sea un entero positivo menor al maximo*/
-            if (*m > CANT_MAX_M || *m < 0) {
+            if (*m < 0) {
                 return ST_ERROR_M_INVALIDO;
             }
             break;
