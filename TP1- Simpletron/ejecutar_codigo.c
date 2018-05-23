@@ -4,7 +4,7 @@
 #include "header.h"
 
 status_t ejecutar_codigo(palabras_s * palabra){
-	char * aux; /*Cadena auxiliar en donde se valida lo que ingresa el usuario*/
+    char * aux; /*Cadena auxiliar en donde se valida lo que ingresa el usuario*/
     long temp; /*Guardo enteros para validar antes de guardarlos en memoria*/
     char* p; /*Puntero auxiliar*/
     size_t i;
