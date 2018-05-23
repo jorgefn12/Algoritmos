@@ -45,7 +45,7 @@ Retorna por el nombre el estado de la función.
 status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida) {
     int i, j;
     FILE *archivo_salida;
-
+    /*Verifica si se imprime por stdout o archivo*/
     if (tipo_archivo_salida == ARCHIVO_DEFAULT)
         archivo_salida = stdout;
     else if (tipo_archivo_salida == ARCHIVO_TXT) {
@@ -54,7 +54,7 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
             return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
         }
     }
-
+    /*Imprime últimos registros de la simpletron*/
     fprintf(archivo_salida, "%s:\n", DUMP_MSJ_INICIO);
     fprintf(archivo_salida, "%15s: %5ld\n", DUMP_MSJ_ACUMULADOR, palabra.acumulador);
     fprintf(archivo_salida, "%15s:    %02d\n", DUMP_MSJ_PROGRAM_COUNTER, palabra.program_counter);
@@ -62,8 +62,8 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
     fprintf(archivo_salida, "%15s:    %02d\n", DUMP_MSJ_OPCODE, palabra.opcode);
     fprintf(archivo_salida, "%15s:    %02d\n", DUMP_MSJ_OPERANDO, palabra.operando);
     fprintf(archivo_salida, "%s:\n", DUMP_MSJ_MEMORIA);
-
-
+    
+    /*Imprime la memoria del simpletron*/
     for (i = 0; i < 10; i++)
         fprintf(archivo_salida, "%6d", i);
     /*
