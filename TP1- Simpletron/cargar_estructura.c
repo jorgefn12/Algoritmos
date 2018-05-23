@@ -3,6 +3,13 @@
 #include <string.h>
 #include "header.h"
 
+/*
+Esta función se encarga de seleccionar dónde y de qué forma se debe leer el archivo de entrada
+para la carga de memoria y delega dichas tareas a otras funciones.
+Recibe como argumentos un archivo_t que indica el formato de entrada, una cadena con el nombre
+del archivo y un puntero a la estructura del simpletron.
+Retorna por el nombre el estado de la función.
+*/
 status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra) {
     status_t status;
 
@@ -26,6 +33,7 @@ status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo
                 status = cargar_estructura_stdin(palabra);
                 break;
             } else
+            /*ENTRADA archivo*/
                 status = cargar_estructura_txt(&palabra, nombre_archivo_entrada);
             break;
         default:
