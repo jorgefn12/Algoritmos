@@ -72,7 +72,7 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
 
             /*Guardo la palabra en la estructura*/
             (*palabra)->memoria[i] = strtol(linea, &pch, 10);
-            i += 1; /*Poner uno en define?*/
+            i += 1;
             if (((*palabra)->memoria = (int*) realloc((*palabra)->memoria, sizeof (int)*(i + 1))) == NULL)
                 return ST_ERROR_MEM;
         }
@@ -90,6 +90,12 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
     return status;
 }
 
+/*
+Esta función carga la memoria del simpletron desde un archivo con formato binario.
+La función recibe un puntero  a estructura (simpletron) y una cadena con el nombre del 
+archivo de entrada.
+Retorna por el nombre el estado de la función.
+*/
 status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada) {
     /*El archivo esta compuesto por enteros*/
     int i = 0, j;
