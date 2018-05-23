@@ -20,9 +20,9 @@
 #define INIT_INSTRUCCIONES 0
 #define MIN_PALABRA -9999
 #define MAX_PALABRA 9999
-#define MAX_INSTRICCIONES 200
+#define MAX_INSTRICCIONES 5000
 #define MAX_STR 200
-#define CANT_MAX_M 200
+#define MAX_INGRESOS 5
 
 /*ARGUMENTOS*/
 #define CLA_AYUDA "-h"
@@ -90,12 +90,14 @@
 #define MSJ_ERROR_CAD_NO_LEIDA "No pudo leer el valor ingresado"
 #define MSJ_ERROR_OPCODE_INVALIDO "El código de instrucción no es válido"
 #define MSJ_ERROR_MAX_INSTR_SUPERADO "La cantidad de instrucciones operadas alcanzó el máximo admitido"
+#define MSJ_ERROR_MAX_INGRESOS_SUPERADO "La cantidad de ingresos alcanzó el máximo admitido"
 #define MSJ_ERROR_INGRESO_PALABRA "Error. La palabra debe ser un entero sin caracteres alfabeticos. Vuelva a ingresar la palabra"
 
 /*EJECUCION CODIGO*/
 #define MSJ_COMIENZO_EJECUCION "******** INICIO DE EJECUCION DEL SIMPLETRON *******"
 #define MSJ_FIN_EJECUCION "********* FIN DE EJECUCION DEL SIMPLETRON *********"
 #define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
+#define MSJ_NUEVO_INGRESO "Ingrese nuevamente."
 #define MSJ_IMPRIMIR_PALABRA "Contenido de la posición"
 
 /*DUMP*/
@@ -127,7 +129,8 @@ typedef enum {
     ST_ERROR_CAD_NO_LEIDA,
     ST_ERROR_OPCODE_INVALIDO,
     ST_ERROR_MAX_INSTR_SUPERADO,
-    ST_ERROR_ESCRIBIR_BIN
+    ST_ERROR_ESCRIBIR_BIN,
+    ST_ERROR_MAX_INGRESOS_SUPERADO
 } status_t;
 
 typedef enum {
@@ -142,7 +145,6 @@ typedef enum {
 
 typedef struct {
     int * memoria;
-    /*opcode, operando*/
     long acumulador;
     int program_counter;
     size_t cantidad_memoria;
