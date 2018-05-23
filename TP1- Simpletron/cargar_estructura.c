@@ -125,6 +125,11 @@ status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada
     return ST_OK;
 }
 
+/*
+Esta función carga la memoria del simpletron desde stdin con formato de texto.
+La función recibe un puntero  a estructura (simpletron).
+Retorna por el nombre el estado de la función.
+*/
 status_t cargar_estructura_stdin(palabras_s *palabras) {
     char *palabra_ingresada, *pch;
     int i = 0, aux;
@@ -141,7 +146,7 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
         if ((strcmp(palabra_ingresada, FINALIZAR_CARGA)) != 0) {
             /*Pido memoria para guardar una palabra*/
             aux = strtol(palabra_ingresada, &pch, 10);
-
+            /*Valido que contenga solamente un entero*/
             if (strlen(pch) == 1) {
                 palabras->memoria[i] = aux;
                 i++;
@@ -150,6 +155,7 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
 
                 printf("%s ", MSJ_INGRESO_PALABRA);
                 fgets(palabra_ingresada, MAX_STR, stdin);
+            /*Si no fue entero, ingresa nuevamente*/
             } else {
                 fprintf(stdout, "%s\n", MSJ_ERROR_INGRESO_PALABRA);
                 printf("%s ", MSJ_INGRESO_PALABRA);
