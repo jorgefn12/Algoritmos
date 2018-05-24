@@ -32,6 +32,8 @@ int main(int argc, char** argv) {
         imprimir_errores(status);
         dump(tipo_archivo_salida, archivo_salida, palabra);
         free(palabra.memoria);
+        free(archivo_entrada);
+        free(archivo_salida);
         return EXIT_FAILURE;
     }
     status = dump(tipo_archivo_salida, archivo_salida, palabra);
@@ -39,7 +41,8 @@ int main(int argc, char** argv) {
         imprimir_errores(status);
 
     free(palabra.memoria);
-
+    free(archivo_entrada);
+    free(archivo_salida);
     return EXIT_SUCCESS;
 }
 
