@@ -5,7 +5,8 @@
 
 /*Esta funcion valida los argumentos pasados por la linea de comandos
  *El ingreso de argumentos en este caso no deben tener un orden especifico*/
-status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f) {
+
+status_t validacion_cla(int argc, char **argv, size_t *m, char **archivo_i, archivo_t *tipo_archivo_i, char **archivo_f, archivo_t *tipo_archivo_f) {
     size_t i;
     char * p;
     bool_t encontrado = FALSE, encontrado_of = FALSE;
@@ -13,16 +14,12 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
     /*Se verifica que la cantidad de argumentos ingresados sean correctas*/
     if (argc > CANT_MAX_ARG || argc < CANT_MIN_ARG)
         return ST_ERROR_CANT_ARG;
-
     /*Pido memoria para guardar los nombres de los archivos de entrada y salida*/
-    archivo_i = (char*)malloc(sizeof(char)*MAX_STR);
-    archivo_f = (char*)malloc(sizeof(char)*MAX_STR);
-    
+    *archivo_i = (char*)malloc(sizeof(char)*MAX_STR);
+    *archivo_f = (char*)malloc(sizeof(char)*MAX_STR);
     /*Verifico que los punteros no sean nulos*/
     if (argv == NULL || m == NULL || archivo_i == NULL || tipo_archivo_i == NULL || archivo_f == NULL || tipo_archivo_f == NULL)
         return ST_ERROR_PTR_NULO;
-
-    
     /*-----------------------------AYUDA-----------------------------
      * Forma de ejecutar: ./simpletron -h
      * Cuando se pide una ayuda solo se debe ingresar el comando de ayuda y nada mas*/
@@ -47,20 +44,20 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
             *m = DEFAULT_M;
         }
     }
-    
 
     /*-----------------------------ARCHIVO I-----------------------------
      * Se obtiene el archivo pasado por linea de comandos*/
     for (i = 1; i < argc; i++) {
+
         /*Se busca el argumento "-i" en argv*/
         if ((strcmp(argv[i], CLA_I)) == 0) {
             /*Si el usuario ingresa quiere ingresar palabras por stdin debe ingresar: "-i -" o "-i stdin"*/
             if ((strcmp(argv[i + 1], CLA_I_DEFAULT)) == 0 || (strcmp(argv[i + 1], STR_STDIN)) == 0) {
                 *tipo_archivo_i = ARCHIVO_DEFAULT;
-                memcpy(archivo_i, STR_STDIN, strlen(STR_STDIN) + 1);
+                memcpy(*archivo_i, STR_STDIN, strlen(STR_STDIN) + 1);
             } else {
                 /*Si se ingreso el nombre del archivo de entrada lo guardo*/
-                memcpy(archivo_i, argv[i + 1], strlen(argv[i + 1]) + 1);
+                memcpy(*archivo_i, argv[i + 1], strlen(argv[i + 1]) + 1);
             }
             /*Se encontro el argumento -i*/
             encontrado = TRUE;
@@ -68,9 +65,9 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
         }
     }
     /*Si no se encontro el argumento -i devuelvo un error, dado que el mismo es obligatorio*/
-    if (encontrado != TRUE)
+    if (encontrado != TRUE){
         return ST_ERROR_ARCHIVO_I_NO_INGRESADO;
-    
+    }
     /*Reseteo la variable para usarla nuevamente*/
     encontrado = FALSE;
 
@@ -92,7 +89,6 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
             break;
         }
     }
-
     /*Si no se encuentra el argumento "-if"*/
     if (encontrado != TRUE)
         return ST_ERROR_IF_NO_INGRESADO;
@@ -107,7 +103,7 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
         /*Se busca el argumento "-o" en argv*/
         if ((strcmp(argv[i], CLA_O)) == 0) {
             /*Copio el nombre del archivo de salida que se supone que se ingresa luego del argumento -o*/
-            memcpy(archivo_f, argv[i + 1], strlen(argv[i + 1]) + 1);
+            memcpy(*archivo_f, argv[i + 1], strlen(argv[i + 1]) + 1);
             encontrado = TRUE; /*Se encontro el flag -o*/
             break;
         }
@@ -116,10 +112,8 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
     /*Si no se encontro el argumento -o se tomara como default stdout*/
     if (encontrado != TRUE) {
         *tipo_archivo_f = ARCHIVO_DEFAULT;
-        memcpy(archivo_f, STR_STDOUT, strlen(STR_STDOUT) + 1);
+        memcpy(*archivo_f, STR_STDOUT, strlen(STR_STDOUT) + 1);
     }
-
-    
     /*-----------------------------OF-----------------------------
      * Se obtiene si el tipo de archivo de salida sera interpretado como bin o txt*/
     /*Si se ingreso -o, se debe ingresar -of*
@@ -137,8 +131,7 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
             encontrado_of = TRUE;
             break;
         }
-    }
-    
+    }    
     /*Si no se ingreso -o ni -of: la salida sera stdout en txt*/
     if (encontrado != TRUE && encontrado_of != TRUE)
         *tipo_archivo_f = ARCHIVO_DEFAULT;
@@ -147,6 +140,5 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archi
     else if (encontrado == TRUE && encontrado_of != TRUE){
         *tipo_archivo_f = ARCHIVO_TXT;
     }
-    
     return ST_OK;
 }
