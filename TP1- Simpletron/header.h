@@ -61,7 +61,7 @@
 
 /*MENSAJES DE AYUDA*/
 #define MSJ_AYUDA_TITULO "------------------------------AYUDA------------------------------"
-#define MSJ_AYUDA_M1 "OPCION |N|: Simpletron tiene una memoria de N palabras. Si no se da el argumento, por omisión tendrá 50 palabras."
+#define MSJ_AYUDA_M1 "OPCION |N|: Simpletron tiene una memoria de N palabras. Si no se da el argumento, por omisión tendrá 50 palabras. El maximo es de 200 palabras"
 #define MSJ_AYUDA_I1 "OPCION |ARCHIVO|: El programa se leerá del archivo pasado como opción, en caso contrario, de stdin."
 #define MSJ_AYUDA_IF1 "OPCION |BIN|: El archivo de entrada se entenderá como una secuencia binaria de enteros que representan las palabras que forman el programa."
 #define MSJ_AYUDA_IF2 "OPCION |TXT|: El archivo de entrada se interpretará como secuencia de números, cada uno en una única línea."
@@ -154,7 +154,7 @@ typedef struct {
 } palabras_s;
 
 /*Validacion*/
-status_t validacion_cla(int argc, char **argv, size_t *m, char *archivo_i, archivo_t *tipo_archivo_i, char *archivo_f, archivo_t *tipo_archivo_f);
+status_t validacion_cla(int argc, char **argv, size_t *m, char **archivo_i, archivo_t *tipo_archivo_i, char **archivo_f, archivo_t *tipo_archivo_f);
 /*Carga de estructura*/
 status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra);
 status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrada);
