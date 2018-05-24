@@ -29,7 +29,7 @@ status_t ejecutar_codigo(palabras_s * palabra){
 
 	/*Comienza ejecución*/
     puts(MSJ_COMIENZO_EJECUCION);
-    for(palabra->program_counter = 0; palabra->program_counter < MAX_INSTRICCIONES; palabra->program_counter++){
+    for(palabra->program_counter = 0, palabra->acumulador = 0; palabra->program_counter < MAX_INSTRICCIONES; palabra->program_counter++){
         palabra->instruccion = palabra->memoria[palabra->program_counter];
         palabra->operando = palabra->instruccion % 100;
         palabra->opcode = palabra->instruccion / 100;
