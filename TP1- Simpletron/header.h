@@ -92,6 +92,7 @@
 #define MSJ_ERROR_MAX_INSTR_SUPERADO "La cantidad de instrucciones operadas alcanzó el máximo admitido"
 #define MSJ_ERROR_MAX_INGRESOS_SUPERADO "La cantidad de ingresos alcanzó el máximo admitido"
 #define MSJ_ERROR_INGRESO_PALABRA "Error. La palabra debe ser un entero sin caracteres alfabeticos. Vuelva a ingresar la palabra"
+#define MSJ_ERROR_I_BIN_IF_NO_VALIDO "No es valido el ingreso de palabras por pantalla en modo binario"
 
 /*EJECUCION CODIGO*/
 #define MSJ_COMIENZO_EJECUCION "******** INICIO DE EJECUCION DEL SIMPLETRON *******"
@@ -122,6 +123,7 @@ typedef enum {
     ST_ERROR_ARCHIVO_NO_ENCONTRADO,
     ST_ERROR_MEM,
     ST_ERROR_M_INVALIDO,
+    ST_ERROR_I_BIN_IF_NO_VALIDO,
     /*status de ejecutar_codigo*/
     ST_ERROR_CAD_NO_ES_ENTERO,
     ST_ERROR_PALABRA_FUERA_DE_RANGO,
