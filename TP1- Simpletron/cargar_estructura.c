@@ -9,31 +9,30 @@ para la carga de memoria y delega dichas tareas a otras funciones.
 Recibe como argumentos un archivo_t que indica el formato de entrada, una cadena con el nombre
 del archivo y un puntero a la estructura del simpletron.
 Retorna por el nombre el estado de la función.
-*/
+ */
 status_t leer_archivo(char *nombre_archivo_entrada, const archivo_t tipo_archivo_entrada, palabras_s *palabra) {
     status_t status;
 
     switch (tipo_archivo_entrada) {
+            /*Si se ingreso -if bin*/
         case ARCHIVO_BIN:
             /*ENTRADA stdin*/
             if (strcmp(nombre_archivo_entrada, STR_STDIN) == 0) {
-                /*
-                                status = cargar_estructura_stdin(palabra, &palabra->program_counter);
-                 */
-                break;
+                return ST_ERROR_I_BIN_IF_NO_VALIDO;
             }
 
             /*ENTRADA archivo*/
             status = cargar_estructura_bin(palabra, nombre_archivo_entrada);
 
             break;
+            /*Si se ingreso -if txt*/
         case ARCHIVO_TXT:
             /*ENTRADA stdin*/
             if (strcmp(nombre_archivo_entrada, STR_STDIN) == 0) {
                 status = cargar_estructura_stdin(palabra);
                 break;
             } else
-            /*ENTRADA archivo*/
+                /*ENTRADA archivo*/
                 status = cargar_estructura_txt(&palabra, nombre_archivo_entrada);
             break;
         default:
@@ -48,23 +47,24 @@ Esta función carga la memoria del simpletron desde un archivo con formato de te
 La función recibe un puntero doble a estructura (simpletron) y una cadena con el nombre del 
 archivo de entrada.
 Retorna por el nombre el estado de la función.
-*/
+ */
 status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrada) {
     char * pch, *linea;
-    status_t status = ST_OK;
     FILE * archivo_entrada;
     int i = 0, j;
 
-    linea = (char*) malloc(sizeof (char)*MAX_STR);
-    if (linea == NULL)
-        return ST_ERROR_MEM;
-
+    /*Compruebo si el archivo existe*/
     if ((archivo_entrada = fopen(nombre_archivo_entrada, "r")) == NULL)
         return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
+    
+    linea = (char*) malloc(sizeof (char)*MAX_STR);
+    if (linea == NULL)
+        return ST_ERROR_MEM;    
 
     if (((*palabra)->memoria = (int*) malloc(sizeof (int))) == NULL)
         return ST_ERROR_MEM;
 
+    /*Obtengo una linea a la vez del archivo*/
     while (!feof(archivo_entrada) && (i < (*palabra)->cantidad_memoria)) {
         if ((fgets(linea, MAX_STR, archivo_entrada)) != NULL) {
             /*Descarto los comentarios*/
@@ -73,6 +73,7 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
             /*Guardo la palabra en la estructura*/
             (*palabra)->memoria[i] = strtol(linea, &pch, 10);
             i += 1;
+            /*Pido memoria para agregar luego una palabra mas*/
             if (((*palabra)->memoria = (int*) realloc((*palabra)->memoria, sizeof (int)*(i + 1))) == NULL)
                 return ST_ERROR_MEM;
         }
@@ -87,7 +88,7 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
 
     fclose(archivo_entrada);
     free(linea);
-    return status;
+    return ST_OK;
 }
 
 /*
@@ -95,20 +96,20 @@ Esta función carga la memoria del simpletron desde un archivo con formato binar
 La función recibe un puntero  a estructura (simpletron) y una cadena con el nombre del 
 archivo de entrada.
 Retorna por el nombre el estado de la función.
-*/
+ */
 status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada) {
     /*El archivo esta compuesto por enteros*/
     int i = 0, j;
     FILE * archivo_entrada_bin;
 
-    if((palabra->memoria = (int*) malloc(sizeof (int)))==NULL)
+    if ((palabra->memoria = (int*) malloc(sizeof (int))) == NULL)
         return ST_ERROR_MEM;
 
     if ((archivo_entrada_bin = fopen(nombre_archivo_entrada, "rb")) == NULL)
         return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
 
     while (!feof(archivo_entrada_bin) && (i < palabra->cantidad_memoria)) {
-        if((palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(i + 1)))==NULL)
+        if ((palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(i + 1))) == NULL)
             return ST_ERROR_MEM;
         if ((fread(&palabra->memoria[i], sizeof (int), 1, archivo_entrada_bin)) == 1)
             i++;
@@ -129,7 +130,7 @@ status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada
 Esta función carga la memoria del simpletron desde stdin con formato de texto.
 La función recibe un puntero  a estructura (simpletron).
 Retorna por el nombre el estado de la función.
-*/
+ */
 status_t cargar_estructura_stdin(palabras_s *palabras) {
     char *palabra_ingresada, *pch;
     int i = 0, aux;
@@ -155,7 +156,7 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
 
                 printf("%s ", MSJ_INGRESO_PALABRA);
                 fgets(palabra_ingresada, MAX_STR, stdin);
-            /*Si no fue entero, ingresa nuevamente*/
+                /*Si no fue entero, ingresa nuevamente*/
             } else {
                 fprintf(stdout, "%s\n", MSJ_ERROR_INGRESO_PALABRA);
                 printf("%s ", MSJ_INGRESO_PALABRA);
