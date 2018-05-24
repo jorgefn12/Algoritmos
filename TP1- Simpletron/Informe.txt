@@ -7,3 +7,269 @@ Para agregar codigo corto, escribirlo dentro de: \texttt{codigo...}
 Para agregar muchas lineas de codigo: \begin{lstlisting}[language=c]
                                         codigo....
                                       \end{lstlisting}
+                                      
+                                      
+BACKUP 24/5                                 
+\documentclass[a4paper,spanish]{article}
+
+\usepackage{graphicx}
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{fancyhdr}
+\usepackage{color}
+\usepackage{courier}
+\usepackage{multirow}
+\usepackage{anysize}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{hyperref}
+
+\setlength{\columnsep}{0.5cm}
+
+\definecolor{cadet}{rgb}{0.33, 0.41, 0.47}
+\definecolor{orange}{rgb}{0.93, 0.53, 0.18}
+\definecolor{carminered}{rgb}{1.0, 0.0, 0.22}
+\definecolor{green}{rgb}{0.33, 0.42, 0.18}
+\definecolor{darkmagenta}{rgb}{0.55, 0.0, 0.55}
+
+\lstset{ frame=Ltb,
+     framerule=0pt,
+     aboveskip=0.5cm,
+     framextopmargin=3pt,
+     framexbottommargin=3pt,
+     framexleftmargin=0.4cm,
+     framesep=0pt,
+     rulesep=.4pt,
+     backgroundcolor=,
+     rulesepcolor=\color{black},
+     %
+     stringstyle=\ttfamily\color{darkmagenta},
+     showstringspaces = false,
+     basicstyle=\small\ttfamily,
+     commentstyle=\itshape\color{cadet},
+     keywordstyle=\bfseries\color{orange},
+     identifierstyle=,
+     %        
+     numbers=left,
+     numbersep=15pt,
+     numberstyle=\tiny,
+     numberfirstline = false,
+     breaklines=true,
+   }
+   
+     
+   
+\begin{document}
+\title{Algoritmos y Programación I - TP1}
+\marginsize{2cm}{2cm}{2cm}{2cm}
+\renewcommand\contentsname{Indice}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\headrulewidth}{0.4pt}
+
+
+%CARATULA----------------------------------------------------------------------
+\pagestyle{empty}
+\begin{center}
+	\includegraphics[width=10cm]{logo}
+\end{center}
+\vfill
+
+%TITULO
+\begin{center}
+	\Huge{95.11 - Algoritmos y Programación I}\\
+	\Huge{Trabajo práctico N$^\circ$ 1}\\
+\end{center}
+\vspace{4cm}
+
+%INTEGRANTES
+\begin{center}
+    Ono, Karen Tamara onokarent@gmail.com\\
+    -----\\
+    \vspace{1cm}
+    Fecha de entrega: 22/05/2018
+\end{center}
+\vspace{1cm}
+\vfill
+
+%PIE
+Lic. Mónica Kuhn \hspace{7.5cm} 1$^\circ$ cuatrimestre de 2018
+
+%----------------------------------------------------------------------
+
+\newpage
+\setcounter{page}{1}
+%ENCABEZADO
+\pagestyle{fancy}
+	\rhead{\includegraphics[scale=0.2]{logo}}
+	\lfoot{95.11 Algoritmos y Programación I}
+	\lhead{Trabajo Práctico N 1}
+	\cfoot{\thepage}
+
+\tableofcontents
+\newpage
+
+\section{Introducción}
+En el presente trabajo práctico se pone en práctica los conocimientos adquiridos sobre:
+arreglos/vectores, memoria dinámica, argumentos en línea de órdenes (CLA), estructuras, archivos y modularización.
+
+
+\section{Desarrollo}
+Se desarrolló un programa que manipula archivos que se invocan por medio de la línea de comando o CLA, por sus siglas en inglés (Command Line Argument)...................................................................\\
+
+\subsection{Compilación del programa}
+Para compilar el programa, en la terminal de Linux solo se deberá ingresar:\\
+\begin{center}
+\texttt{make}
+\end{center}
+Dado que se creo un archivo Makefile para lograr que la compilación del mismo sea más simple. Al ingresar este comando en la terminal, este archivo Makefile compila el programa con el siguiente prototipo
+\begin{center}
+\texttt{\$(CC) \$(CFLAGS) \$(OBJECTS) -o simpletron}
+\end{center}
+Donde:
+\begin{itemize}
+\item \texttt{\$(CC)} = \texttt{gcc}: es el compilador utilizado
+\item \texttt{\$(CFLAGS)} = \texttt{-ansi -Wall -pedantic}
+\begin{itemize}\renewcommand{\labelitemii}{$-$}
+\item La opción \texttt{-ansi -pedantic} devuelve avisos de las violaciones del estándar ANSI.
+\item \texttt{-Wall} nos mostrará todos los avisos que produzca el compilador, no solamente los errores. Los avisos nos indican dónde y/o porqué podría surgir algún error en nuestro programa. Si \texttt{-Wall} no produce avisos, es debido a que el programa es completamente válido.
+\end{itemize}
+\item La opción \texttt{-o} especifica el fichero de salida para el código, normalmente es el último argumento en la línea de comandos. Si el mismo se omite, creará un archivo por defecto llamado \texttt{a.out}.
+\item \texttt{simpletron} es el nombre del ejecutable que se crea
+\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{make.png}
+\caption{Compilación del programa con el comando make}
+\end{figure}
+
+
+\newpage
+\subsection{Ejecución del programa}
+\label{sec:ejecucion}
+Para ejecutar el programa deberá seguir el siguiente prototipo:\\
+\texttt{./simpletron -m N -i archivo\_entrada.txt -if txt -o archivo\_salida.txt -of txt}\\
+Donde:\\
+\begin{tabular}{p{2cm}l}
+\textbf{-m} & \textbf{No es obligatorio}. Indica la cantidad de memoria que se quiere reservar. Si no se ingresa el argumento, se guardan 50 palabras por defecto\\
+& \texttt{-m N}: se guardan N cantidad de palabras. El mismo debe ser un entero positivo.\\
+& \texttt{-m}: se guardan 50 palabras\\
+\textbf{-i} & \textbf{Es obligatorio}. Indica el archivo de entrada, este puede ser un archivo binario, un txt, un lms o se puede ingresar palabras con stdin. Si no se ingresa el argumento, el programa terminará.\\
+& \texttt{-i ejemplo.lms}: se leerá un archivo lms\\
+& \texttt{-i ejemplo.bin}: se leerá un archivo bin\\
+& \texttt{-i -}: se ingresaran palabras del stdin\\
+& Si se ingresa cualquier otra opción luego de \texttt{-i}, ocurrirá un error y el programa terminará.\\
+\textbf{-if} & \textbf{Es obligatorio}. Indica cómo debe leerse el archivo de entrada, como un texto o un archivo binario.\\
+& \texttt{-if bin}: se leerá el archivo bin como un binario\\
+& \texttt{-if txt}: se leerá el archivo bin como un texto\\
+& Si se ingresa cualquier otra opción luego de \texttt{-if}, ocurrirá un error y el programa terminará.\\
+\textbf{-o} & \textbf{No es obligatorio}. Indica donde se imprimirá el dump.\\
+& \texttt{-o ejemplo.bin}\\
+& \texttt{-o ejemplo.txt}\\
+& Si no se ingresa el argumento, el dump se realizará por stdout.\\
+\textbf{-of} & \textbf{No es obligatorio}. Si no se ingresa \texttt{-o} se puede ingresar \texttt{-of}. Si se ingresa \texttt{-o} y no se ingresa \textbf{-of} por defecto la salida será en un archivo txt.\\
+& \texttt{-of bin}: el dump se imprimirá como un binario \\
+& \texttt{-of txt}: el dump se imprime como un texto \\
+& Si se ingresa cualquier otra opción luego de \texttt{-of}, ocurrirá un error y el programa terminará.\\
+\end{tabular}
+
+
+\section{Funcionamiento del programa}
+\subsection{Validación de argumentos pasados por la terminal}
+El programa comienza validando los argumentos pasados por la terminal, para esto se creó la función \texttt{validacion\_cla()}. En esta función se verifica que:
+\begin{itemize}\renewcommand{\labelitemi}{$-$}
+\item - la cantidad de argumentos ingresados no esté por encima de la máxima cantidad posible de argumentos ingresados, ni por debajo del mínimo
+\item si se ingresa el argumento \texttt{-h}, se comprobará que este que haya sido el único ingresado. De ser correcto el pedido de ayuda, se imprimirá una ayuda como se detallo en la \hyperref[sec:ejecucion]{sección 2.2}
+\item si se ingresa un argumento no válido como por ejemplo \texttt{-il} en vez de \texttt{-if} el programa no devuelve un error, lo ignora, y procede como si no se hubiese ingresado el argumento \texttt{-if}
+\item los demás argumentos pasarán a ser validados acorde a los parámetros requeridos. Cada vez que se encuentre algún error en el ingreso de estos o que no se haya ingresado uno de los argumentos requeridos como obligatorios, la función finalizará y devolverá un status con el error cometido
+\end{itemize}
+
+Esta función guarda los nombres de los archivos de entrada y salida pero no verifica que existan, de esto se encarga la función \texttt{leer\_archivo()}.\\
+\\
+Si todos los argumentos ingresados son correctamente validados, se devuelve un \texttt{ST\_OK} y el programa continua con la carga de las palabras en memoria \hyperref[sec:cargar estructura]{(sección 3.2)}, caso contrario se imprime un mensaje de error correspondiente al error producido y el programa finaliza.\\
+
+
+\subsection{Cargar palabras en memoria}
+\label{sec:cargar estructura}
+Si la validación de los argumentos devuelve \texttt{ST\_OK} la función \texttt{leer\_archivo()} verifica lo siguiente:
+\begin{itemize}\renewcommand{\labelitemii}{$-$}
+\item Si el archivo de entrada es de tipo binario
+\begin{itemize}
+\item \texttt{-i ejemplo.bin -if bin}: si se ingresó el nombre de un archivo bin, se llama a la función \texttt{cargar\_estructura\_bin()} \hyperref[sssec: cargar bin]{(sección 3.2.2)}
+\item \texttt{-i - -if bin} ó \texttt{-i stdin -if bin}: el programa devuelve un error, dado que no soporta el ingreso binario de palabras
+\end{itemize}
+
+\item Si el archivo de entrada es de tipo texto
+\begin{itemize}
+\item \texttt{-i ejemplo.lms -if txt}: si se ingresó el nombre del archivo de entrada se llama a la función \texttt{cargar\_estructura\_txt()} (sección\hyperref[sssec: cargar txt]{(sección 3.2.1)}) verifica que el archivo existe, caso contrario devuelve un error.
+\item \texttt{-i - -if txt} ó \texttt{-i stdin -if txt}: el ingreso  de las palabras será por stdin y se llama a la función \texttt{cargar\_estructura\_stdin()} \hyperref[sssec: cargar stdin]{(sección 3.2.3)}.
+\end{itemize}
+\end{itemize}
+
+\subsubsection{Cargar estructura tipo txt}
+\label{sssec: cargar txt}
+La función \texttt{cargar\_estructura\_txt()} primero comprueba que exista el archivo pasado con el flag \texttt{-i} en la terminal, caso contrario la función devuelve un error y el programa finaliza.\\
+Si el archivo existe, se obtiene una línea a la vez del archivo y se guarda temporalmente en una variable de tipo \texttt{char *}, se descartan los comentarios, se castea a un tipo entero y se guarda en un estructura.\\
+Suponemos que el archivo está bien escrito y no contiene palabras mal tipeadas como por ejemplo: \texttt{+22a3}, \texttt{+333}.\\
+En el caso de que se ingrese un número menor a cuatro dígitos suponemos que delante del mismo va un 0. \textbf{ESTO SE VERIFICA EN OTRA FUNCION? No, la función ejecutarcodigo se maneja solamente con numeros enteros. Y la conversión de char a entero se hace en
+una de tus funciones. Para el programa es lo mismo que el usuario ingrese +0003 que 3, ambos numeros (luego de la conversión) representan lo mismo y me parece más intuitivo para el usuario que lo dejemos así. Luego, en la impresión del dump, forzamos a que aparezcan los signos y los ceros}
+
+En el caso de que el usuario haya pedido memoria, por la terminal, para cierta cantidad de palabras y el texto contiene una cantidad menor, el vector que contiene dichas palabras será llenado con ceros.
+
+
+\subsubsection{Cargar estructura tipo bin}
+\label{sssec: cargar bin}
+La función \texttt{cargar\_estructura\_bin()} se comporta de manera similar a \texttt{cargar\_estructura\_txt()}. Comienza verificando si el archivo de entrada binario existe, caso contrario devuelve un error y un mensaje correspondiente a dicho error y el programa finaliza.\\
+Suponemos que el archivo binario está compuesto solo por enteros que representan las palabras a guardar a la estructura. Obtenemos las palabras con la función \texttt{fread()} de ANSI C y la guardamos en un vector.\\
+
+
+\subsubsection{Cargar estructura por stdin}
+\label{sssec: cargar stdin}
+
+\subsection{Ejecutar palabras cargadas en memoria}
+\label{sec:ejecutar palabras}
+
+\section{Consideraciones y estrategias adoptadas}\textit{}
+Se tuvieron en cuenta las siguientes consideraciones a la hora de realizar el código de la función \texttt{ejecutar\_codigo()}:\\
+
+Inicialmente se usaron arrreglos estáticos como método de validación
+de cadenas auxiliares, se optó por usar memoria dinámica para un mayor control de los errores
+que la solicitud de memoria pudiera ocasionar.\\
+
+Respecto al aspecto funcional de esta sección, se decidió trabajar con un elemento a la vez. Es decir,
+se accede a la memoria del simpletron y se obtiene la instrucción, opcode y operando según el
+program\_counter vaya necesitando alguna en especifico. Esto es debido a que en el dump, sólo se
+requieren los últimos registros usados, y también, a que es más eficiente.\\
+
+Otra cuestión que se tuvo en cuenta es la de añadir la variable instruccion a la estructura del 
+simpletron, ya que su presencia haría más legible algunas partes del código de ejecución y de impresión del dump.\\
+
+Para favorecer al acoplamiento de las distintas partes del programa, se diseñó esta función para realizar la tarea específica de
+simplemente ejecutar lo que le manden. Por esto, se supuso que en la memoria habrían ya cargados números enteros, y apartir de ahí
+comenzarían las validaciones. \\
+
+Se decidió no realizar más validaciones que las necesarias, por lo que en una primera instancia se valida que la memoria 
+contenga solamente números enteros dentro del rango aceptado. 
+Luego, que el operando pueda acceder sólo a memoria que se le solicitó mediante los CLA. Por último, que antes de guardar
+un valor del acumulador a la memoria, éste respete los rangos aceptados. El resto de validaciones tiene que ver con las 
+lecturas que el usuario ingresa por teclado (validaciones de strtol, fgets y un número máximo de intentos para escribir correctamente).
+La implementación de un número máximo de intentos tuvo que ver más con un tema práctico y de ahorro de procesamiento. Si lo que está
+operando el sistema no es una persona, o si es que ésta no sabe utilizarlo, lo mejor sería dejar de procesar y mandarle un mensaje de ayuda.\\
+
+\section{Fuga de memoria}\textit{}
+Para verificar que el programa no tiene fugas de memoria se utiliza valgrind. En la terminal se ejecuta lo siguiente:\\
+\texttt{valgrind --leak-check=yes ./main -m -i suma.lms -if txt -o resultado.txt -of txt}\\
+
+
+
+
+\section{Problemas encontrados}
+
+
+\section{Bibliografía}
+[1]\textit{Cómo programar en C, C++ y Java}, Deitel \& Deitel, 4ª edición
+
+\end{document}
