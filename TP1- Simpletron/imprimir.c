@@ -3,11 +3,6 @@
 #include <string.h>
 #include "header.h"
 
-/*
-Este procedimiento se encarga de imprimir por stderr el estado en que se finalizaron las demás
-funciones y un mensaje de ayuda adicional.
-Recibe un status_t.
-*/
 void imprimir_errores(status_t status) {
     switch (status) {
         case ST_ERROR_CANT_ARG:
@@ -63,25 +58,21 @@ void imprimir_errores(status_t status) {
         case ST_ERROR_ESCRIBIR_BIN:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR_ESCRIBIR_BIN, MSJ_MAS_AYUDA);
             break;
-        case ST_ERROR_MAX_INGRESOS_SUPERADO:
-	    fprintf(stderr, "%s. %s\n", MSJ_ERROR_MAX_INGRESOS_SUPERADO, MSJ_MAS_AYUDA);
-	    break;
+        case ST_ERROR_I_BIN_IF_NO_VALIDO:
+            fprintf(stderr, "%s. %s\n", MSJ_ERROR_I_BIN_IF_NO_VALIDO, MSJ_MAS_AYUDA);
+            break;
         default:
             fprintf(stderr, "%s. %s\n", MSJ_ERROR, MSJ_MAS_AYUDA);
     }
 }
 
-/*
-Este procedimiento imprime por stderr ayuda acerca del formato en que se deben escribir los CLA
-del programa.
-*/
 void imprimir_ayuda() {
-    fprintf(stderr, "%s\n", MSJ_AYUDA_TITULO);
-    fprintf(stderr, "%s    %s\n\n", CLA_M, MSJ_AYUDA_M1);
-    fprintf(stderr, "%s    %s\n\n", CLA_I, MSJ_AYUDA_I1);
-    fprintf(stderr, "%s   %s\n", CLA_IF, MSJ_AYUDA_IF1);
-    fprintf(stderr, "      %s\n\n", MSJ_AYUDA_IF2);
-    fprintf(stderr, "%s    %s\n\n", CLA_O, MSJ_AYUDA_O1);
-    fprintf(stderr, "%s   %s\n", CLA_OF, MSJ_AYUDA_OF1);
-    fprintf(stderr, "      %s\n\n", MSJ_AYUDA_OF2);
+    fprintf(stdout, "%s\n", MSJ_AYUDA_TITULO);
+    fprintf(stdout, "%s    %s\n\n", CLA_M, MSJ_AYUDA_M1);
+    fprintf(stdout, "%s    %s\n\n", CLA_I, MSJ_AYUDA_I1);
+    fprintf(stdout, "%s   %s\n", CLA_IF, MSJ_AYUDA_IF1);
+    fprintf(stdout, "      %s\n\n", MSJ_AYUDA_IF2);
+    fprintf(stdout, "%s    %s\n\n", CLA_O, MSJ_AYUDA_O1);
+    fprintf(stdout, "%s   %s\n", CLA_OF, MSJ_AYUDA_OF1);
+    fprintf(stdout, "      %s\n\n", MSJ_AYUDA_OF2);
 }
