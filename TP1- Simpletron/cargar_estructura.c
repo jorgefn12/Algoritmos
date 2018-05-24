@@ -102,15 +102,18 @@ status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada
     int i = 0, j;
     FILE * archivo_entrada_bin;
 
-    if ((palabra->memoria = (int*) malloc(sizeof (int))) == NULL)
-        return ST_ERROR_MEM;
-
+    /*Compruebo si dicho archivo binario pasado por la terminal existe*/
     if ((archivo_entrada_bin = fopen(nombre_archivo_entrada, "rb")) == NULL)
         return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
+    
+    if ((palabra->memoria = (int*) malloc(sizeof (int))) == NULL)
+        return ST_ERROR_MEM;    
 
     while (!feof(archivo_entrada_bin) && (i < palabra->cantidad_memoria)) {
+        /*Pido memoria en el vector para guardar una palabra mas*/
         if ((palabra->memoria = (int*) realloc(palabra->memoria, sizeof (int)*(i + 1))) == NULL)
             return ST_ERROR_MEM;
+        /*Guardo la palabra leida en la estructura*/
         if ((fread(&palabra->memoria[i], sizeof (int), 1, archivo_entrada_bin)) == 1)
             i++;
     }
