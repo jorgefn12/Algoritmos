@@ -5,16 +5,16 @@
 
 int main(int argc, char** argv) {
     status_t status;
-    char archivo_entrada[MAX_STR], archivo_salida[MAX_STR];
+    char *archivo_entrada;
+    char *archivo_salida;
     archivo_t tipo_archivo_entrada, tipo_archivo_salida;
     palabras_s palabra;
 
     /*Inicializo algunas variables*/
     palabra.program_counter = 0;
     palabra.acumulador = 0;
-
     /*1) Validacion de argumentos pasados por la terminal*/
-    status = validacion_cla(argc, argv, &palabra.cantidad_memoria, archivo_entrada, &tipo_archivo_entrada, archivo_salida, &tipo_archivo_salida);
+    status = validacion_cla(argc, argv, &palabra.cantidad_memoria, &archivo_entrada, &tipo_archivo_entrada, &archivo_salida, &tipo_archivo_salida);
     if (status != ST_OK) {
         imprimir_errores(status);
         return EXIT_FAILURE;
@@ -26,7 +26,6 @@ int main(int argc, char** argv) {
         imprimir_errores(status);
         return EXIT_FAILURE;
     }
-
     /*3) Ejecutar codigo*/
     status = ejecutar_codigo(&palabra);
     if (status != ST_OK){
