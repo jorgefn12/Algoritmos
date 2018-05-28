@@ -9,6 +9,7 @@
 status_t validacion_cla(int argc, char **argv, size_t *m, char **archivo_i, archivo_t *tipo_archivo_i, char **archivo_f, archivo_t *tipo_archivo_f) {
     size_t i;
     char * p;
+    long temp;
     bool_t encontrado = FALSE, encontrado_of = FALSE;
 
     /*Se verifica que la cantidad de argumentos ingresados sean correctas*/
@@ -33,11 +34,13 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char **archivo_i, arch
     for (i = 1; i < argc; i++) {
         /*Se busca el argumento "-m" en argv*/
         if (strcmp(argv[i], CLA_M) == 0) {
-            *m = strtol(argv[i + 1], &p, 10);
+            temp = strtol(argv[i + 1], &p, 10);
             /* Se comprueba que sea un entero positivo*/
-            if (*m < 0) {
+            if (temp < 0)
                 return ST_ERROR_M_INVALIDO;
-            }
+            if (*p != '\n' && *p != '\0')
+                return ST_ERROR_M_INVALIDO;
+            *m = temp;
             break;
         } else {
             /*Si no se encuentra se asigna 50 por default*/
