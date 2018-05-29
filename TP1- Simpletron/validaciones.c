@@ -168,7 +168,7 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char **archivo_i, arch
  * 4) cuando se ingresa el archivo por cat, -i no es obligatorio
  */
 status_t cat_ingresado(char **argv, char ***archivo_entrada) {
-    if (strcmp(argv[POS_ARGV0], "cat") == 0 && (strcmp(argv[POS_ARGV2], "|") == 0)) {
+    if (strcmp(argv[POS_ARGV0],INICIO_CAT) == 0 && (strcmp(argv[POS_ARGV2], FIN_CAT) == 0)) {
         memcpy(*archivo_entrada, argv[POS_ARGV1], strlen(argv[POS_ARGV1] + 1));
     } else
         return ST_CAT_NO_INGRESADO;
