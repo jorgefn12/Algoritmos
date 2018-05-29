@@ -69,7 +69,8 @@
 #define MSJ_AYUDA_OF1 "OPCION |BIN|: El volcado se hará en binario guardando cada elemento de la estructura del Simpletron, además de la memoria."
 #define MSJ_AYUDA_OF2 "OPCION |TXT|: El volcado se hará en formato de texto imprimiendo los registros y la memoria."
 
-/*MENSAJES DE ERRORES*/
+/*MENSAJES DE ERRORES Y MENSAJES AL USUARIO*/
+#define MSJ_BIENVENIDO_SIMPLETRON "*** ¡Bienvenido a la Simpletron!         ***\n*** Por favor, ingrese su programa una   ***\n*** instrucción (o dato) a la vez. Yo    ***\n*** escribiré la ubicacíón y un signo de ***\n*** pregunta (?). Luego usted ingrese la ***\n*** palabra para esa ubicación. Ingrese  ***\n*** -99999 para finalizar:               ***"
 #define MSJ_MAS_AYUDA "Ingrese -h para mas ayuda"
 #define MSJ_ERROR "Ocurrio un error"
 #define MSJ_ERROR_IF_NO_VALIDO "El ingreso de archivo de entrada es invalido"
