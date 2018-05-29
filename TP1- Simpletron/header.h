@@ -39,7 +39,7 @@
 #define STR_STDIN "stdin"
 #define STR_STDOUT "stdout"
 #define FINALIZAR_CARGA "-99999\n"
-#define NOMBRE_GENERICO_ARCHIVO_BIN "dump"
+#define NOMBRE_GENERICO_ARCHIVO_BIN "dump_binario"
 
 /*constantes de ejecutar_codigo*/
 #define LEER 10
