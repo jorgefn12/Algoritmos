@@ -143,7 +143,8 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
     if ((palabras->memoria = (int*) malloc(sizeof (int))) == NULL)
         return ST_ERROR_MEM;
 
-    printf("%s ", MSJ_INGRESO_PALABRA);
+    printf("%s\n",MSJ_BIENVENIDO_SIMPLETRON);
+    printf("%02d ? ", i);
     fgets(palabra_ingresada, MAX_STR, stdin);
 
     while (i < palabras->cantidad_memoria) {
@@ -163,7 +164,7 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
                 fprintf(stdout, "%s\n", MSJ_ERROR_INGRESO_PALABRA);
             }
             /*Pido al usario que ingrese otra palabra*/
-            printf("%s ", MSJ_INGRESO_PALABRA);
+            printf("%02d ? ", i);
             fgets(palabra_ingresada, MAX_STR, stdin);
         } else
             break;
