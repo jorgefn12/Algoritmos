@@ -176,6 +176,7 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
         palabras->memoria[i] = 0;
     }
 
+    /*Se libera la memoria pedida para la variable auxiliar*/
     free(palabra_ingresada);
 
     return ST_OK;
