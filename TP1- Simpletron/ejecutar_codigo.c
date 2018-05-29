@@ -59,6 +59,7 @@ status_t ejecutar_codigo(palabras_s * palabra){
                     break;
                 }
                 if(i == MAX_INGRESOS){
+			puts(MSJ_FIN_EJECUCION);
                 	free(aux);
                 	return ST_ERROR_MAX_INGRESOS_SUPERADO;
                 }
