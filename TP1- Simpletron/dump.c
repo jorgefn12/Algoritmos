@@ -66,9 +66,6 @@ status_t imprimir_dump_por_stdout_o_txt(palabras_s palabra, char *nombre_archivo
     /*Imprime la memoria del simpletron*/
     for (i = 0; i < 10; i++)
         fprintf(archivo_salida, "%6d", i);
-    /*
-    fprintf(archivo_salida, "\n");
-     */
     for (i = 0, j = 0; i < palabra.cantidad_memoria; i++) {
         if (i % 10 == 0) {
             fprintf(archivo_salida, "\n%2d", j * 10);
