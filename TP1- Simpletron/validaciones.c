@@ -64,12 +64,9 @@ status_t validacion_cla(int argc, char **argv, size_t *m, char **archivo_i, arch
             if ((strcmp(argv[i + 1], CLA_I_DEFAULT)) == 0 && cat == TRUE) {
                 break;
             }                
-            /*Si el usuario ingresa quiere ingresar palabras por stdin debe ingresar: "-i -" o "-i stdin"*/
-            else if ((strcmp(argv[i + 1], CLA_I_DEFAULT)) == 0 || (strcmp(argv[i + 1], STR_STDIN)) == 0) {
+            /*Si el usuario ingresa quiere ingresar palabras por stdin debe ingresar: "-i stdin"*/
+            else if ((strcmp(argv[i + 1], STR_STDIN)) == 0) {
                 *tipo_archivo_i = ARCHIVO_DEFAULT;
-                /*Si el archivo de entrada ya se paso previamente por cat, el programa devuelve un error*/
-                if (cat == TRUE)
-                    return ST_CAT_INGRESADO;
                 memcpy(*archivo_i, STR_STDIN, strlen(STR_STDIN) + 1);
             } else {
                 /*Si se ingreso el nombre del archivo de entrada lo guardo*/
