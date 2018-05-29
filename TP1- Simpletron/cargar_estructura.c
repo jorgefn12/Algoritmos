@@ -56,10 +56,10 @@ status_t cargar_estructura_txt(palabras_s** palabra, char *nombre_archivo_entrad
     /*Compruebo si el archivo existe*/
     if ((archivo_entrada = fopen(nombre_archivo_entrada, "r")) == NULL)
         return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-    
+
     linea = (char*) malloc(sizeof (char)*MAX_STR);
     if (linea == NULL)
-        return ST_ERROR_MEM;    
+        return ST_ERROR_MEM;
 
     if (((*palabra)->memoria = (int*) malloc(sizeof (int))) == NULL)
         return ST_ERROR_MEM;
@@ -105,9 +105,9 @@ status_t cargar_estructura_bin(palabras_s* palabra, char* nombre_archivo_entrada
     /*Compruebo si dicho archivo binario pasado por la terminal existe*/
     if ((archivo_entrada_bin = fopen(nombre_archivo_entrada, "rb")) == NULL)
         return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-    
+
     if ((palabra->memoria = (int*) malloc(sizeof (int))) == NULL)
-        return ST_ERROR_MEM;    
+        return ST_ERROR_MEM;
 
     while (!feof(archivo_entrada_bin) && (i < palabra->cantidad_memoria)) {
         /*Pido memoria en el vector para guardar una palabra mas*/
@@ -154,21 +154,22 @@ status_t cargar_estructura_stdin(palabras_s *palabras) {
             if (strlen(pch) == 1) {
                 palabras->memoria[i] = aux;
                 i++;
+                /*Pido memoria para guardar una palabra*/
                 if ((palabras->memoria = (int*) realloc(palabras->memoria, sizeof (int)*(i + 1))) == NULL)
                     return ST_ERROR_MEM;
-
-                printf("%s ", MSJ_INGRESO_PALABRA);
-                fgets(palabra_ingresada, MAX_STR, stdin);
-                /*Si no fue entero, ingresa nuevamente*/
-            } else {
-                fprintf(stdout, "%s\n", MSJ_ERROR_INGRESO_PALABRA);
-                printf("%s ", MSJ_INGRESO_PALABRA);
-                fgets(palabra_ingresada, MAX_STR, stdin);
             }
+                /*Si no fue entero, ingresa nuevamente*/
+            else {
+                fprintf(stdout, "%s\n", MSJ_ERROR_INGRESO_PALABRA);
+            }
+            /*Pido al usario que ingrese otra palabra*/
+            printf("%s ", MSJ_INGRESO_PALABRA);
+            fgets(palabra_ingresada, MAX_STR, stdin);
         } else
             break;
     }
 
+    /*Relleno el resto del vector con ceros*/
     for (; i < palabras->cantidad_memoria; i++) {
         if ((palabras->memoria = (int*) realloc(palabras->memoria, sizeof (int)*(i + 1))) == NULL)
             return ST_ERROR_MEM;
