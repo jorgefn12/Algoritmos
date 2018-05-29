@@ -69,8 +69,7 @@
 #define MSJ_AYUDA_OF1 "OPCION |BIN|: El volcado se hará en binario guardando cada elemento de la estructura del Simpletron, además de la memoria."
 #define MSJ_AYUDA_OF2 "OPCION |TXT|: El volcado se hará en formato de texto imprimiendo los registros y la memoria."
 
-/*MENSAJES DE ERRORES Y MENSAJES AL USUARIO*/
-#define MSJ_BIENVENIDO_SIMPLETRON "*** ¡Bienvenido a la Simpletron!         ***\n*** Por favor, ingrese su programa una   ***\n*** instrucción (o dato) a la vez. Yo    ***\n*** escribiré la ubicacíón y un signo de ***\n*** pregunta (?). Luego usted ingrese la ***\n*** palabra para esa ubicación. Ingrese  ***\n*** -99999 para finalizar:               ***"
+/*MENSAJES DE ERRORES*/
 #define MSJ_MAS_AYUDA "Ingrese -h para mas ayuda"
 #define MSJ_ERROR "Ocurrio un error"
 #define MSJ_ERROR_IF_NO_VALIDO "El ingreso de archivo de entrada es invalido"
@@ -94,6 +93,7 @@
 #define MSJ_ERROR_MAX_INGRESOS_SUPERADO "La cantidad de ingresos alcanzó el máximo admitido"
 #define MSJ_ERROR_INGRESO_PALABRA "Error. La palabra debe ser un entero sin caracteres alfabeticos. Vuelva a ingresar la palabra"
 #define MSJ_ERROR_I_BIN_IF_NO_VALIDO "No es valido el ingreso de palabras por pantalla en modo binario"
+#define MSJ_ERROR_CAT_INGRESADO "Se ingreso el nombre de archivo de entrada por cat"
 
 /*EJECUCION CODIGO*/
 #define MSJ_COMIENZO_EJECUCION "******** INICIO DE EJECUCION DEL SIMPLETRON *******"
@@ -133,7 +133,9 @@ typedef enum {
     ST_ERROR_OPCODE_INVALIDO,
     ST_ERROR_MAX_INSTR_SUPERADO,
     ST_ERROR_ESCRIBIR_BIN,
-    ST_ERROR_MAX_INGRESOS_SUPERADO
+    ST_ERROR_MAX_INGRESOS_SUPERADO,
+            ST_CAT_NO_INGRESADO,
+            ST_CAT_INGRESADO
 } status_t;
 
 typedef enum {
@@ -171,3 +173,4 @@ status_t dump(archivo_t tipo_archivo_salida, char* nombre_archivo_salida, palabr
 status_t imprimir_dump_bin(palabras_s palabra, char *nombre_archivo_salida, archivo_t tipo_archivo_salida);
 /*Acumulador*/
 status_t ejecutar_codigo(palabras_s * palabra);
+status_t cat_ingresado(char **argv, char ***archivo_entrada);
