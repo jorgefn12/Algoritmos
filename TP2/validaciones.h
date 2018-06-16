@@ -10,5 +10,4 @@
 #define FLAG_CLA_FORMATO_CORTO "-f"
 #define FLAG_CLA_FORMATO_LARGO "--formato"
 
-
-status_t validacion_cla(int argc, char** argv);
+status_t validacion_cla(int argc, char** argv, long *memoria_pedida);
