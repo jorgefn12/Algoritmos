@@ -1,4 +1,5 @@
 #define POS_ARGV1 1
+#define DEFAULT_MEMORIA 50
 
 /*typedef de los operandos*/
 typedef enum {
@@ -8,9 +9,11 @@ typedef enum {
 
 typedef enum {
     ST_OK,
+    ST_HELP,
     ST_ERROR,
     ST_ERROR_CANT_ARG,
-    ST_HELP
+    ST_ERROR_MEMORIA_INGRESADA_INVALIDA
+
 } status_t;
 
 typedef long palabra_t;
