@@ -1,4 +1,10 @@
 typedef long palabra_t;
+typedef unsigned int uint;
+
+typedef struct palabra{
+    palabra_t palabra;
+    palabras_s *sig;
+}palabras_s;
 
 typedef struct archivo{
     char* nombre_archivo;
@@ -6,10 +12,11 @@ typedef struct archivo{
     palabra_t *palabra;
 }archivos_s;
 
-typedef struct {
-    size_t largo;
+typedef struct simpletron{
+    archivos_s archivo;
     palabra_t acumulador;
     size_t program_counter;
-    archivos_s archivo;
-    simpletron_s *sig;
+    uint opcode;
+    uint operando;
+    struct simpletron *sig;
 } simpletron_s;
