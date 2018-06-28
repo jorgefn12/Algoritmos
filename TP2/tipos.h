@@ -20,3 +20,9 @@ typedef struct simpletron{
     uint operando;
     struct simpletron *sig;
 } simpletron_s;
+
+typedef struct {
+    size_t cantidad_memoria;
+    size_t cantidad_archivos;
+    archivos_s archivo_salida;
+}params_s;
