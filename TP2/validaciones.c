@@ -50,11 +50,8 @@ status_t validacion_cla(int argc, char** argv, long *memoria_pedida) {
     
 
     /*---------------------------------ARCHIVOS---------------------------------*/
-    /*Crear un char** para guardar los archivos
-     * Estaba pensando si esta vez nos resulta mas facil pedirle al usuario que ingrese los
-     * flags de manera ordena. De esta manera sabemos que despues de haber ingresado el formato
-     * del archivo, sabemos que el usuario ingresa la lista de los archivos
-     */
+    /*Crear funcion que valide que el archivo existe, antes de guardarlo en la lista*/
+    /*Crear una funcion que obtenga el formato*/
     
     return ST_OK;
 }
