@@ -12,7 +12,12 @@ status_t validacion_cla(int argc, char** argv, long *memoria_pedida) {
     /*Se verifica que la cantidad de argumentos ingresados sean correctas*/
     if (argc < CANT_MIN_ARG)
         return ST_ERROR_CANT_ARG;
+    
+    /*Caso hipotetico: ./simpletron h */
+    if(argc==CANT_MIN_ARG && ((strcmp(argv[POS_ARGV1],FLAG_CLA_AYUDA_CORTO))!=0 || (strcmp(argv[POS_ARGV1],FLAG_CLA_AYUDA_LARGO))!=0))
+        return ST_ERROR_FLAG_NO_RECONOCIDO;
 
+    
     /*---------------------------------AYUDA---------------------------------*/
     /*Ejecucion: ./simpletron -h
      *           ./simpletron --help
@@ -20,18 +25,17 @@ status_t validacion_cla(int argc, char** argv, long *memoria_pedida) {
     if (argc == CANT_MIN_ARG && ((strcmp(argv[POS_ARGV1], FLAG_CLA_AYUDA_CORTO)) == 0 || (strcmp(argv[POS_ARGV1], FLAG_CLA_AYUDA_LARGO)) == 0))
         return ST_HELP;
 
-
+    
     /*---------------------------------MEMORIA---------------------------------*/
     for (i = 1; i < argc; i++) {
-        /*Se busca el argumento "-m" en argv*/
+        /*Se busca el argumento "-m" y "--memoria" en argv*/
         if (strcmp(argv[i], FLAG_CLA_MEMORIA_CORTO) == 0 || strcmp(argv[i], FLAG_CLA_MEMORIA_LARGO) == 0) {
             temp = strtol(argv[i + 1], &p, 10);
             
-            /*Se comprueba que sea un entero positivo*/
-            if (temp <= 0)
+            /*En el caso de que el usuario ingrese caracter alfabetico o pida memoria con decimales*/
+            if (temp <= 0 || p!=NULL)
                 return ST_ERROR_MEMORIA_INGRESADA_INVALIDA;
-            if (*p != '\n' && *p != '\0')
-                return ST_ERROR_MEMORIA_INGRESADA_INVALIDA;
+            
             *memoria_pedida = temp;
             break;
         } else {
