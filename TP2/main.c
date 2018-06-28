@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "main_header.h"
+#include "comun.h"
 #include "validaciones.h"
 
 int main(int argc, char** argv) {

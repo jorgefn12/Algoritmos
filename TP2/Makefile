@@ -5,11 +5,11 @@ OBJECTS=main.o validaciones.o errores.o
 tp1: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o simpletron
 	
-main.o: main.c main_header.h
+main.o: main.c comun.h
 	$(CC) -c main.c
-validaciones.o: validaciones.c validaciones.h main_header.h
+validaciones.o: validaciones.c validaciones.h comun.h
 	$(CC) -c validaciones.c
-errores.o: errores.c errores.h main_header.h
+errores.o: errores.c errores.h comun.h
 	$(CC) -c errores.c
 	
 clean:

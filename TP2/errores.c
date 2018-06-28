@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "main_header.h"
+#include "comun.h"
 #include "errores.h"
 
 void imprimir_mensaje_de_error(status_t status){
