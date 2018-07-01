@@ -46,7 +46,7 @@ status_t validacion_cla(int argc, char** argv, params_s *param) {
     if (strcmp(argv[i], FLAG_CLA_MEMORIA_CORTO) == 0 || strcmp(argv[i], FLAG_CLA_MEMORIA_LARGO) == 0) {
         temp = strtol(argv[i + 1], &pc, 10);
         /*En el caso de que el usuario ingrese caracter alfabetico o pida memoria con decimales*/
-        if (temp <= 0 || pc != NULL)
+        if (temp <= 0)
             return ST_ERROR_MEMORIA_INGRESADA_INVALIDA;
         if (*pc != '\n' && *pc != '\0')
             return ST_ERROR_MEMORIA_INGRESADA_INVALIDA;
