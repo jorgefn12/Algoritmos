@@ -152,5 +152,5 @@ char * get_name_lmsfile(char* name){
 }
 
 formato_t get_fmt_lmsfile(char* name){
-    !strncmp(name,"b:",2) ? FMT_BIN : FMT_TXT;
+    return (!strncmp(name,"b:",2)) ? FMT_BIN : FMT_TXT;
 }
