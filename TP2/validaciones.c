@@ -48,7 +48,8 @@ typedef struct params{
     size_t cant_memoria;
     size_t cant_archivos;
     archivo_s archivo_salida;
-    archivo_s * archivo_entrada;
+    archivo_s * archivo_entrada; /* Por ahora estoy usando esta variable, cuando tengamos el resto del código agregamos los
+                                  * nombres directamente a la estructura simpletron */
 }params_s;
 
 /*Se trabajan con CLA de orden especifico, ningun argumento es obligatorio*/
