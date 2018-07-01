@@ -1,57 +1,158 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "comun.h"
 #include "validaciones.h"
 
-status_t validacion_cla(int argc, char** argv, long *memoria_pedida) {
-    size_t i;
-    char *p;
-    long temp;
+typedef enum {
+    ST_OK,
+    ST_HELP,
+    ST_ERROR_CANT_ARG,
+    ST_ERROR_PTR_NULO,
+    ST_ERROR_ARCHIVO_I_NO_INGRESADO,
+    ST_ERROR_IF_NO_VALIDO,
+    ST_ERROR_IF_NO_INGRESADO,
+    ST_ERROR_OF_NO_VALIDO,
+    ST_ERROR_OF_NO_INGRESADO,
+    ST_ERROR_ARCHIVO_NO_ENCONTRADO,
+    ST_ERROR_MEM,
+    ST_ERROR_M_INVALIDO,
+    ST_ERROR_I_BIN_IF_NO_VALIDO,
+    /*status de ejecutar_codigo*/
+    ST_ERROR_CAD_NO_ES_ENTERO,
+    ST_ERROR_PALABRA_FUERA_DE_RANGO,
+    ST_ERROR_SEGMENTATION_FAULT,
+    ST_ERROR_CAD_NO_LEIDA,
+    ST_ERROR_OPCODE_INVALIDO,
+    ST_ERROR_MAX_INSTR_SUPERADO,
+    ST_ERROR_ESCRIBIR_BIN,
+    ST_ERROR_MAX_INGRESOS_SUPERADO
+} status_t;
+typedef int palabra_t;
+typedef enum {
+    FMT_TXT,
+    FMT_BIN
+}formato_t;
+typedef struct palabra{
+    palabra_t dato;
+    struct palabra * sig;
+}palabra_s;
+typedef enum{
+    FALSE = 0,
+    TRUE
+}bool_t;
 
-    /*Se verifica que la cantidad de argumentos ingresados sean correctas*/
-    if (argc < CANT_MIN_ARG)
+typedef struct archivo{
+    char * nombre;
+    formato_t formato;
+    palabra_s memoria;
+}archivo_s;
+
+/*Para indicar que el archivo es stdin, se inicializa cant_archivos = 1, nombre = "stdin" y formato = FMT_TXT*/
+typedef struct params{
+    size_t cant_memoria;
+    size_t cant_archivos;
+    archivo_s archivo_salida;
+    archivo_s * archivo_entrada;
+}params_s;
+
+/*Se trabajan con CLA de orden especifico, ningun argumento es obligatorio*/
+/*El orden es el siguiente: ./run [-h] [-m N] [-f FMT] [-|[ARCHIVO1 [ARCHIVO2 ...]]]*/
+status_t validacion_cla(int argc, char **argv, params_s *param);
+
+int main(int argc, char** argv){
+    
+    return (EXIT_SUCCESS);
+}
+
+
+/*MODIFICACIONES
+ * Se agregan nuevas constantes
+ * Se modifica CLA_AYUDA por CLA_H y CLA_HELP
+ * Se modifica el proceso de validacion de cla para que admita argumentos en un orden especifico 
+ */
+status_t validacion_cla(int argc, char **argv, params_s *param){
+    size_t i, used_flags;
+    bool_t stdin_flag = FALSE;
+    long temp;
+    char * pc;
+    /*----------------------------VALIDACIONES-----------------------------
+     */
+
+    if(argv == NULL || param == NULL)
+        return ST_ERROR_PTR_NULO;
+    if(argc < CANT_MIN_ARG || argc > CANT_MAX_ARG)
         return ST_ERROR_CANT_ARG;
     
-    /*Caso hipotetico: ./simpletron h */
-    if(argc==CANT_MIN_ARG && ((strcmp(argv[POS_ARGV1],FLAG_CLA_AYUDA_CORTO))!=0 || (strcmp(argv[POS_ARGV1],FLAG_CLA_AYUDA_LARGO))!=0))
-        return ST_ERROR_FLAG_NO_RECONOCIDO;
-
-    
-    /*---------------------------------AYUDA---------------------------------*/
-    /*Ejecucion: ./simpletron -h
-     *           ./simpletron --help
+    /*-----------------------------DEFAULT-----------------------------
      */
-    if (argc == CANT_MIN_ARG && ((strcmp(argv[POS_ARGV1], FLAG_CLA_AYUDA_CORTO)) == 0 || (strcmp(argv[POS_ARGV1], FLAG_CLA_AYUDA_LARGO)) == 0))
+    param->cant_memoria = 50;
+    param->cant_archivos = 1;
+    param->archivo_salida.formato = FMT_TXT;
+    param->archivo_salida.nombre = "dump.txt";
+    if( (param->archivo_entrada = (archivo_s*)malloc(sizeof(archivo_s))) == NULL )
+        return ST_ERROR_MEM;
+    param->archivo_entrada->formato = FMT_TXT;
+    param->archivo_entrada->nombre = "stdin";
+    
+    
+    i = 1;
+    /*-----------------------------AYUDA-----------------------------
+     * Forma de ejecutar: ./simpletron -h o --help */
+    if(argc == 2 && (strcmp(argv[i], CLA_H) || strcmp(argv[i], CLA_HELP)))
         return ST_HELP;
-
     
-    /*---------------------------------MEMORIA---------------------------------*/
-    for (i = 1; i < argc; i++) {
-        /*Se busca el argumento "-m" y "--memoria" en argv*/
-        if (strcmp(argv[i], FLAG_CLA_MEMORIA_CORTO) == 0 || strcmp(argv[i], FLAG_CLA_MEMORIA_LARGO) == 0) {
-            temp = strtol(argv[i + 1], &p, 10);
-            
-            /*En el caso de que el usuario ingrese caracter alfabetico o pida memoria con decimales*/
-            if (temp <= 0 || p!=NULL)
-                return ST_ERROR_MEMORIA_INGRESADA_INVALIDA;
-            
-            *memoria_pedida = temp;
-            break;
-        } else {
-            /*Si no se encuentra se asigna 50 por default*/
-            *memoria_pedida = DEFAULT_MEMORIA;
-        }
+    /*-----------------------------MEMORIA-----------------------------
+     * Forma de ejecutar: ./simpletron -m 23...
+     * Si no se ingresa este argumento, por defecto sera de 50 palabras*/
+    
+    if( strcmp(argv[i], CLA_M) == 0 || stcmp(argv[i], CLA_MEMORIA) == 0){
+        temp = strtol(argv[i+1], &pc, 10);
+        if (temp < 0)
+            return ST_ERROR_M_INVALIDO;
+        if (*pc != '\n' && *p != '\0')
+            return ST_ERROR_M_INVALIDO;
+        *m = temp;
+        if (i += 2 >= argc) 
+            return ST_OK;
     }
-
-
+    if( strcmp(argv[i], CLA_F) == 0 || stcmp(argv[i], CLA_FORMATO) == 0){
+        if( strcmp(argv[i+1], CLA_F_OPT_BIN) == 0){
+            param->archivo_salida.formato = FMT_BIN;
+            if (i += 2 >= argc) 
+                return ST_OK;
+        }
+        else if ( strcmp(argv[i+1], CLA_F_OPT_TXT) == 0){
+            param->archivo_salida.formato = FMT_TXT;
+            if (i += 2 >= argc) 
+                return ST_OK;
+        }
+        else
+            return ST_ERROR_F_INVALIDO;
+    }
     /*---------------------------------FORMATO---------------------------------*/
-    /*Hacemos un bool_t o un typedef con los tipos de archivos*/
-    
-
-    /*---------------------------------ARCHIVOS---------------------------------*/
-    /*Crear funcion que valide que el archivo existe, antes de guardarlo en la lista*/
-    /*Crear una funcion que obtenga el formato*/
-    
-    return ST_OK;
+    used_flags = i;
+    for (; i < argc; i ++){
+        /*
+        if ( strcmp(argv[i], CLA_STDIN) == 0)
+            stdin_flag = TRUE;
+        */
+        
+        
+        param->archivo_entrada.nombre = get_name_file(argv[i]); 
+        param->archivo_entrada.formato = get_fmt_file(argv[i]);    
+    }
 }
+
+
+char * get_name_lmsfile(char* name){
+    if(strcmp(name, CLA_STDIN) == 0)
+        return "stdin";
+    if(strncmp(name,"b:",2) == 0 || strncmp(name,"t:",2) == 0)
+        return name + 2;
+    return name;
+}
+
+formato_t get_fmt_lmsfile(char* name){
+    !strncmp(name,"b:",2) ? FMT_BIN : FMT_TXT;
+}   
