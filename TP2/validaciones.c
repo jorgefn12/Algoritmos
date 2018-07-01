@@ -14,12 +14,12 @@ typedef enum {
     ST_OK,
     ST_HELP,
     ST_ERROR_CANT_ARG,
+    ST_ERROR_STDIN_INVALIDO,
     ST_ERROR_PTR_NULO,
     ST_ERROR_ARCHIVO_NO_ENCONTRADO,
     ST_ERROR_MEM,
-    ST_ERROR_M_INVALIDO,
-}status_t;
-
+    ST_ERROR_M_INVALIDO
+} status_t;
 typedef int palabra_t;
 
 typedef enum {
@@ -48,26 +48,25 @@ typedef struct params{
     size_t cant_memoria;
     size_t cant_archivos;
     archivo_s archivo_salida;
-    archivo_s * archivo_entrada; /* Por ahora estoy usando esta variable, cuando tengamos el resto del código agregamos los
-                                  * nombres directamente a la estructura simpletron */
+    archivo_s * archivo_entrada;
 }params_s;
 
 /*Se trabajan con CLA de orden especifico, ningun argumento es obligatorio*/
 /*El orden es el siguiente: ./run [-h] [-m N] [-f FMT] [-|[ARCHIVO1 [ARCHIVO2 ...]]]*/
 status_t validacion_cla(int argc, char **argv, params_s *param);
 
-int main(int argc, char** argv){
-    
-    return (EXIT_SUCCESS);
+
+int main(void){
+    return EXIT_SUCCESS;
 }
 
-
-
 status_t validacion_cla(int argc, char **argv, params_s *param){
-    size_t i, used_flags;
+    size_t i, cant_archivos;
     bool_t stdin_flag = FALSE;
     long temp;
     char * pc;
+    FILE *pf;
+    void * pv;
     /*----------------------------VALIDACIONES-----------------------------
      */
 
@@ -123,17 +122,24 @@ status_t validacion_cla(int argc, char **argv, params_s *param){
             return ST_ERROR_F_INVALIDO;
     }
     /*---------------------------------FORMATO---------------------------------*/
-    used_flags = i;
-    for (; i < argc; i ++){
-        /*
-        if ( strcmp(argv[i], CLA_STDIN) == 0)
+    
+    for (cant_archivos = 0; i < argc; i++){
+        if ((param->archivo_entrada = (archivo_s*) realloc(param->archivo_entrada, sizeof (archivo_s)*(++cant_archivos))) == NULL)
+            return ST_ERROR_MEM;
+        param->archivo_entrada[cant_archivos-1].nombre = get_name_lmsfile(argv[i]);
+        param->archivo_entrada[cant_archivos-1].formato = get_fmt_lmsfile(argv[i]);
+        if ((pf = fopen(param->archivo_entrada[cant_archivos-1].nombre, "r")) == NULL)
+            return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
+        fclose(pf);
+        
+        if(!stdin_flag && strcmp(param->archivo_entrada[cant_archivos-1].nombre,"stdin") == 0 && param->archivo_entrada[cant_archivos-1].formato == FMT_TXT)
             stdin_flag = TRUE;
-        */
-        
-        
-        param->archivo_entrada.nombre = get_name_file(argv[i]); 
-        param->archivo_entrada.formato = get_fmt_file(argv[i]);    
     }
+    
+    if(stdin_flag && cant_archivos != 1)
+        return ST_ERROR_STDIN_INVALIDO;
+    param->cant_archivos = cant_archivos;
+    return ST_OK;
 }
 
 
@@ -147,4 +153,4 @@ char * get_name_lmsfile(char* name){
 
 formato_t get_fmt_lmsfile(char* name){
     !strncmp(name,"b:",2) ? FMT_BIN : FMT_TXT;
-}   
+}
