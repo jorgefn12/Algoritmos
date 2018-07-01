@@ -1,3 +1,9 @@
+/*MODIFICACIONES
+ * Se agregan nuevas constantes
+ * Se modifica CLA_AYUDA por CLA_H y CLA_HELP
+ * Se modifica el proceso de validacion de cla para que admita argumentos en un orden especifico 
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,34 +15,23 @@ typedef enum {
     ST_HELP,
     ST_ERROR_CANT_ARG,
     ST_ERROR_PTR_NULO,
-    ST_ERROR_ARCHIVO_I_NO_INGRESADO,
-    ST_ERROR_IF_NO_VALIDO,
-    ST_ERROR_IF_NO_INGRESADO,
-    ST_ERROR_OF_NO_VALIDO,
-    ST_ERROR_OF_NO_INGRESADO,
     ST_ERROR_ARCHIVO_NO_ENCONTRADO,
     ST_ERROR_MEM,
     ST_ERROR_M_INVALIDO,
-    ST_ERROR_I_BIN_IF_NO_VALIDO,
-    /*status de ejecutar_codigo*/
-    ST_ERROR_CAD_NO_ES_ENTERO,
-    ST_ERROR_PALABRA_FUERA_DE_RANGO,
-    ST_ERROR_SEGMENTATION_FAULT,
-    ST_ERROR_CAD_NO_LEIDA,
-    ST_ERROR_OPCODE_INVALIDO,
-    ST_ERROR_MAX_INSTR_SUPERADO,
-    ST_ERROR_ESCRIBIR_BIN,
-    ST_ERROR_MAX_INGRESOS_SUPERADO
-} status_t;
+}status_t;
+
 typedef int palabra_t;
+
 typedef enum {
     FMT_TXT,
     FMT_BIN
 }formato_t;
+
 typedef struct palabra{
     palabra_t dato;
     struct palabra * sig;
 }palabra_s;
+
 typedef enum{
     FALSE = 0,
     TRUE
@@ -66,11 +61,7 @@ int main(int argc, char** argv){
 }
 
 
-/*MODIFICACIONES
- * Se agregan nuevas constantes
- * Se modifica CLA_AYUDA por CLA_H y CLA_HELP
- * Se modifica el proceso de validacion de cla para que admita argumentos en un orden especifico 
- */
+
 status_t validacion_cla(int argc, char **argv, params_s *param){
     size_t i, used_flags;
     bool_t stdin_flag = FALSE;
