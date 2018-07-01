@@ -9,7 +9,9 @@ int main(int argc, char** argv) {
     long memoria_pedida;
     
     
+/*
     status = validacion_cla(argc,argv,&memoria_pedida);
+*/
     if(status!=ST_OK)
         imprimir_mensaje_de_error(status);
     

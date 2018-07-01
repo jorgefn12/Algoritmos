@@ -1,19 +1,24 @@
 typedef long palabra_t;
 typedef unsigned int uint;
 
+typedef enum {
+    FMT_TXT,
+    FMT_BIN
+}formato_t;
+
 typedef struct palabra{
-    palabra_t palabra;
-    palabras_s *sig;
-}palabras_s;
+    palabra_t dato;
+    struct palabra * sig;
+}palabra_s;
 
 typedef struct archivo{
-    char* nombre_archivo;
-    /*formato y tipo*/
-    palabra_t *palabra;
-}archivos_s;
+    char * nombre;
+    formato_t formato;
+    palabra_s memoria;
+}archivo_s;
 
 typedef struct simpletron{
-    archivos_s archivo;
+    archivo_s archivo;
     palabra_t acumulador;
     size_t program_counter;
     uint opcode;
@@ -21,8 +26,15 @@ typedef struct simpletron{
     struct simpletron *sig;
 } simpletron_s;
 
-typedef struct {
-    size_t cantidad_memoria;
-    size_t cantidad_archivos;
-    archivos_s archivo_salida;
+/*Para indicar que el archivo es stdin, se inicializa cant_archivos = 1, nombre = "stdin" y formato = FMT_TXT*/
+typedef struct params{
+    size_t cant_memoria;
+    size_t cant_archivos;
+    archivo_s archivo_salida;
+    archivo_s * archivo_entrada; /* Por ahora estoy usando esta variable, cuando tengamos el resto del código agregamos los
+                                  * nombres directamente a la estructura simpletron */
 }params_s;
+
+
+
+

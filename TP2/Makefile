@@ -7,7 +7,7 @@ tp1: $(OBJECTS)
 	
 main.o: main.c comun.h
 	$(CC) -c main.c
-validaciones.o: validaciones.c validaciones.h comun.h
+validaciones.o: validaciones.c validaciones.h comun.h tipos.h
 	$(CC) -c validaciones.c
 errores.o: errores.c errores.h comun.h
 	$(CC) -c errores.c
