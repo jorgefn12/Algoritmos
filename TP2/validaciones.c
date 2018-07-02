@@ -122,8 +122,9 @@ status_t validacion_cla(int argc, char** argv, params_s *param) {
 }
 
 char * get_name_lmsfile(char* name){
-    return strcmp(name, FLAG_CLA_STDIN_CORTO) ? name : FLAG_CLA_STDIN_LARGO;
-}
+    if(strncmp(name,"b:",2) || strncmp(name,"t:",2))
+        return name + 2;
+    return name;
 
 formato_t get_fmt_lmsfile(char* name){
     return strncmp(name,"b:",2) ? FMT_TXT : FMT_BIN;
