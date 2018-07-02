@@ -18,7 +18,8 @@
 #define FLAG_CLA_FORMATO_LARGO "--formato"
 #define FLAG_CLA_FORMATO_OPCION_BIN "bin"
 #define FLAG_CLA_FORMATO_OPCION_TXT "txt"
-#define CLA_STDIN "-"
+#define FLAG_CLA_STDIN_CORTO "-"
+#define FLAG_CLA_STDIN_LARGO "stdin"
 
 
 status_t validacion_cla(int argc, char** argv, params_s *param);
