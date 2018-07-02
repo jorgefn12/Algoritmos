@@ -122,7 +122,7 @@ status_t validacion_cla(int argc, char** argv, params_s *param) {
 }
 
 char * get_name_lmsfile(char* name){
-    if(strncmp(name,"b:",2) || strncmp(name,"t:",2))
+    if(!strncmp(name,"b:",2) || !strncmp(name,"t:",2))
         return name + 2;
     return name;
 
