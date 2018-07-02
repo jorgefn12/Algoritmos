@@ -2,7 +2,7 @@
 
 #define CANT_MIN_ARG 1
 /*Para el correcto funcionamiento del programa, la menor cantidad de argumentos ingresados
- es el caso de ./simpletron --help*/
+ es el caso de ./simpletron */
 #define POS_ARGV1 1
 #define DEFAULT_MEMORIA 50
 #define DEFAULT_CANT_ARCHIVOS 1
