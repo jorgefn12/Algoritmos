@@ -1,12 +1,12 @@
 #include "tipos.h"
 
-#define CANT_MIN_ARG 2 
+#define CANT_MIN_ARG 1
 /*Para el correcto funcionamiento del programa, la menor cantidad de argumentos ingresados
  es el caso de ./simpletron --help*/
 #define POS_ARGV1 1
 #define DEFAULT_MEMORIA 50
 #define DEFAULT_CANT_ARCHIVOS 1
-#define DEFAULT_ARCHIVO_SALIDA "dump.txt"
+#define DEFAULT_ARCHIVO_SALIDA "dump"
 #define DEFAULT_ARCHIVO_ENTRADA "stdin"
 
 /*FLAGS CLA*/
@@ -18,7 +18,7 @@
 #define FLAG_CLA_FORMATO_LARGO "--formato"
 #define FLAG_CLA_FORMATO_OPCION_BIN "bin"
 #define FLAG_CLA_FORMATO_OPCION_TXT "txt"
-#define CLA_STDIN "stdin"
+#define CLA_STDIN "-"
 
 
 status_t validacion_cla(int argc, char** argv, params_s *param);
