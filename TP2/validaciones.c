@@ -106,12 +106,14 @@ status_t validacion_cla(int argc, char** argv, params_s *param) {
         param->archivo_entrada[cant_archivos - 1].nombre = get_name_lmsfile(argv[i]);
         param->archivo_entrada[cant_archivos - 1].formato = get_fmt_lmsfile(argv[i]);
         
-        if(!stdin_flag && strcmp(param->archivo_entrada[cant_archivos-1].nombre, FLAG_CLA_STDIN_LARGO) == 0 && param->archivo_entrada[cant_archivos-1].formato == FMT_TXT)
+        if(!stdin_flag && (strcmp(param->archivo_entrada[cant_archivos-1].nombre,"FLAG_CLA_STDIN_LARGO") == 0 || strcmp(param->archivo_entrada[cant_archivos-1].nombre,FLAG_CLA_STDIN_CORTO) == 0))
             stdin_flag = TRUE;
         
-        if(!stdin_flag && (pf = fopen(param->archivo_entrada[cant_archivos-1].nombre, "r")) == NULL)
-            return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-        fclose(pf);
+        if(!stdin_flag){
+            if((pf = fopen(param->archivo_entrada[cant_archivos-1].nombre, "r")) == NULL)
+                return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
+            fclose(pf);
+        }
     }
 
     if (stdin_flag && (cant_archivos != 1 || param->archivo_entrada->formato == FMT_BIN))
