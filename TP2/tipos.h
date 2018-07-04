@@ -15,13 +15,14 @@ typedef struct archivo{
     char * nombre;
     formato_t formato;
     palabra_s memoria;
+    size_t cant_palabras;
 }archivo_s;
 
 typedef struct simpletron{
     archivo_s archivo;
     palabra_t acumulador;
     size_t program_counter;
-    uint opcode;
+    opcode_t opcode;
     uint operando;
     struct simpletron *sig;
 } simpletron_s;
