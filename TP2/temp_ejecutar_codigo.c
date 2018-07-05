@@ -1,12 +1,15 @@
-/*
-Tira un montón de errores, los estoy corrigiendo.
-Quizas también falte cambiarle el tipo a algunas cosas
-*/
+/*MODIFICACIONES
+ * Se agregan nuevas constantes
+ * Se modifica CLA_AYUDA por CLA_H y CLA_HELP
+ * Se modifica el proceso de validacion de cla para que admita argumentos en un orden especifico 
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define MIN_PALABRA -9999
+#define MAX_PALABRA 9999
 #define INIT_INSTRUCCIONES 0
 #define MAX_INSTRICCIONES 5000
 #define MAX_STR 200
@@ -78,7 +81,9 @@ typedef enum{
     ST_ERROR_MEM,
     ST_ERROR_M_INVALIDO,
     ST_ERROR_F_INVALIDO,
+    ST_ERROR_NODO_VACIO,
     /*status de ejecutar_codigo*/
+    ST_HALT,
     ST_ERROR_CAD_NO_ES_ENTERO,
     ST_ERROR_PALABRA_FUERA_DE_RANGO,
     ST_ERROR_SEGMENTATION_FAULT,
@@ -169,7 +174,7 @@ typedef struct simpletron{
     struct simpletron *sig;
 } simpletron_s;
 
-typedef status_t * (*pfx) (void *, void *, void *);
+typedef status_t (*pfx_lms) (simpletron_s*, palabra_s*, palabra_s*);
 
 
 
@@ -180,7 +185,26 @@ char * get_name_lmsfile(char* name);
 formato_t get_fmt_lmsfile(char* name);
 bool_t argc_reached(size_t i, int argc);
 void imprimir_error(status_t st);
-pfx seleccionar_operacion (opcode_t op);
+pfx_lms seleccionar_operacion (opcode_t op);
+palabra_s* saltar_lista (palabra_s* nodo_inicial, palabra_s* nodo_actual, size_t desde,size_t hasta);
+palabra_s* avanzar_lista_n (palabra_s* nodo, size_t n);
+status_t lms_leer(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_escribir(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_cargar(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_guardar(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_pcargar(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_pguardar(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_sumar(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_restar(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_dividir(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_multiplicar(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_jmp(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_jmpneg(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_jmpzero(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_jnz(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_djnz(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+status_t lms_halt(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual);
+
 /*
 void debug(void){
     static size_t i = 0;
@@ -341,12 +365,13 @@ formato_t get_fmt_lmsfile(char* name){
 status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
     palabra_s * nodo_inicial;
     palabra_s * nodo_actual;
-    
+    size_t i;
+    status_t status;
+    pfx_lms operacion;
     fprintf(stdout,"%s\n",MSJ_COMIENZO_EJECUCION);
     /*El ciclo se detiene hasta que se acabe la lista de simpletron (NULL)*/
     while(simpletron){
-        size_t i;
-        status_t status;
+        
         /*Guarda registros para no perder referencia de la posicion de la lista*/
         nodo_inicial = simpletron->archivo.memoria;
         nodo_actual = simpletron->archivo.memoria;
@@ -369,24 +394,31 @@ status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
                     return ST_ERROR_OPCODE_INVALIDO;
             }
             /*Ejecuta opcde*/
-            status = seleccionar_operacion(simpletron->opcode)(simpletron,nodo_inicial,nodo_actual);
-            if(status != ST_OK)
-                fprintf(stdout,"%s\n", MSJ_FIN_EJECUCION);
-                return status == ST_HALT ? ST_OK : status;
+            operacion = seleccionar_operacion(simpletron->opcode);
+            status = operacion(simpletron,nodo_inicial,nodo_actual);
             
+            if(status != ST_OK){
+                if(status != ST_HALT){
+                    fprintf(stdout,"%s\n", MSJ_FIN_EJECUCION);
+                    return status;
+                }
+                break;
+            }
             /*Avanza lista*/
             nodo_actual = saltar_lista(nodo_inicial, nodo_actual, simpletron->program_counter, simpletron->program_counter + 1);
         }
         /*Avanza al siguiente simpletron en la lista*/
         simpletron = simpletron->sig;
     }
+    return ST_OK;
 }
 
+
 /*Asume que le llegan opcodes validados*/
-pfx seleccionar_operacion (opcode_t op){
+pfx_lms seleccionar_operacion (opcode_t op){
     switch(op){
         case(OP_LEER):
-            return lms_leer;
+            return &lms_leer;
         case(OP_ESCRIBIR):
             return lms_escribir;
         case(OP_CARGAR):
@@ -417,10 +449,12 @@ pfx seleccionar_operacion (opcode_t op){
             return lms_djnz;
         case(OP_HALT):
             return lms_halt;
+        default:
+            return NULL;
     }
 }
 
-void * saltar_lista (void * nodo_inicial, void * nodo_actual, size_t desde,size_t hasta){
+palabra_s* saltar_lista (palabra_s* nodo_inicial, palabra_s* nodo_actual, size_t desde,size_t hasta){
     /*Validacion*/
     if(!nodo_inicial || !nodo_actual || desde < 0 || hasta < 0)
         return NULL;
@@ -434,10 +468,10 @@ void * saltar_lista (void * nodo_inicial, void * nodo_actual, size_t desde,size_
     return avanzar_lista_n (nodo_inicial, hasta);
 }
 
-void * avanzar_lista_n (void * nodo, size_t n){
+palabra_s* avanzar_lista_n (palabra_s * nodo, size_t n){
     if(!nodo || n < 0)
         return NULL;
-    return n ? avanzar_lista_n (nodo->sig, n-1) : nodo;    
+    return n ? avanzar_lista_n(nodo->sig, n-1) : nodo;
 }
 
 /*Creo que se estan haciendo validaciones demás, chequeo bien cuando juntemos todo*/
@@ -445,13 +479,15 @@ void * avanzar_lista_n (void * nodo, size_t n){
 status_t lms_leer(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual){
     char aux[MAX_STR];
     size_t i;
+    long temp;
+    char* pch;
     
     for(i = 0; i < MAX_INGRESOS; i++){
         fprintf(stdout,"%s ",MSJ_INGRESO_PALABRA);
         if(fgets(aux, MAX_STR, stdin) == NULL){
             fprintf(stdout, "%s %s\n", MSJ_NUEVO_INGRESO, MSJ_ERROR_CAD_NO_LEIDA);
         }
-        else if((temp = strtol(aux, &p, 10)) > MAX_PALABRA || temp < MIN_PALABRA || (*p != '\n' && *p != '\0' && *p != EOF)){
+        else if((temp = strtol(aux, &pch, 10)) > MAX_PALABRA || temp < MIN_PALABRA || (*pch != '\n' && *pch != '\0' && *pch != EOF)){
             fprintf(stdout, "%s %s\n", MSJ_NUEVO_INGRESO, MSJ_ERROR_CAD_INVALIDA);
         }
         break;
@@ -471,7 +507,7 @@ status_t lms_escribir(simpletron_s * simpletron, palabra_s * nodo_inicial, palab
     if((nodo_actual = saltar_lista(nodo_inicial,nodo_actual,simpletron->program_counter,simpletron->operando)) == NULL)
         return ST_ERROR_NODO_VACIO;
     
-    fprintf(stdout,"%s %i: %i\n",MSJ_IMPRIMIR_PALABRA,simpletron->operando,nodo_actual->dato);
+    fprintf(stdout,"%s %i: %li\n",MSJ_IMPRIMIR_PALABRA,simpletron->operando,nodo_actual->dato);
     return ST_OK;
 }   
 
@@ -558,31 +594,31 @@ status_t lms_jmp(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s 
     return ST_OK;
 }
 
-status_t lms_jmpneg(){
+status_t lms_jmpneg(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual){
     if(simpletron->acumulador < 0)
         simpletron->program_counter = simpletron->operando - 1;
     return ST_OK;
 }
 
-status_t lms_jmpzero(){
+status_t lms_jmpzero(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual){
     if(!simpletron->acumulador)
         simpletron->program_counter = simpletron->operando - 1;
     return ST_OK;
 }
 
-status_t lms_jnz(){
+status_t lms_jnz(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual){
     if(simpletron->acumulador)
         simpletron->program_counter = simpletron->operando - 1;
     return ST_OK;
 }
 
-status_t lms_djnz(){
+status_t lms_djnz(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual){
     simpletron->acumulador--;
     if(simpletron->acumulador)
         simpletron->program_counter = simpletron->operando;
     return ST_OK;
 }
 
-status_t lms_halt(){
+status_t lms_halt(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s * nodo_actual){
     return ST_HALT;
 }
