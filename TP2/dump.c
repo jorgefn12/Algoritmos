@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "dump.h"
-#include "ejecutar_codigo.h"
+#include "ejecutar_codigo.h" /*Necesita una función para recorrer memorias simpletron que tengo implementado en ejecutar_codigo*/
 #include "comun.h"
 #include "tipos.h"
 
