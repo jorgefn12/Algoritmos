@@ -9,6 +9,7 @@
 #include "comun.h"
 #include "tipos.h"
 
+/*
 *Luego de ejecutar todos los simpletron, dump imprime los registros de cada simpletron por separado dentro
 *de un unico archivo comun: "dump"
 */
