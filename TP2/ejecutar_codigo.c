@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "tipos.h>
-#include "comun.h>
+#include "tipos.h"
+#include "comun.h"
 #include "ejecutar_codigo.h"
 
 int opcode_validos[] = {
