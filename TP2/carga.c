@@ -277,7 +277,6 @@ status_t insertar_en_simpletron(simpletron_s **simpletron, archivo_s *archivo) {
         return status;
     }
 
-    (*simpletron)->sig = NULL;
     temp->sig = *simpletron;
     *simpletron = temp;
 
