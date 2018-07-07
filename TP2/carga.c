@@ -1,4 +1,6 @@
 /*Agregué las lineas 137, 165, 168 para contar palabras de archivos en el formato txt, que es el que está implementado*/
+/* En la linea 245, forcé un NULL al final de la lista de simpletron, que por alguna razón antes no lo tomaba.
+*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -241,7 +243,8 @@ status_t insertar_en_simpletron(simpletron_s **simpletron, archivo_s *archivo) {
     if ((status = crear_nodo_simpletron(&temp, archivo)) != ST_OK) {
         return status;
     }
-
+    
+    (*simpletron)->sig = NULL;
     temp->sig = *simpletron;
     *simpletron = temp;
 
