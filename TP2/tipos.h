@@ -23,12 +23,13 @@ typedef struct archivo {
     size_t cant_palabras;
 } archivo_s;
 
-typedef struct simpletron {
-    archivo_s *archivo;
+typedef struct simpletron{
+    archivo_s * archivo;
     palabra_t acumulador;
-    size_t program_counter;
-    uint opcode;
+    int instruccion;
+    opcode_t opcode;
     uint operando;
+    size_t program_counter;
     struct simpletron *sig;
 } simpletron_s;
 
@@ -42,33 +43,56 @@ typedef struct params {
 } params_s;
 
 /*typedef de los operandos*/
-typedef enum {
+typedef enum{
     OP_LEER = 10,
-    OP_ESCRIBIR = 11
-} opcode_t;
+    OP_ESCRIBIR,
+    OP_CARGAR = 20,
+    OP_GUARDAR,
+    OP_PCARGAR,
+    OP_PGUARDAR,
+    OP_SUMAR = 30,
+    OP_RESTAR,
+    OP_DIVIDIR,
+    OP_MULTIPLICAR,
+    OP_JMP = 40,
+    OP_JMPNEG,
+    OP_JMPZERO,
+    OP_JNZ,
+    OP_DJNZ,
+    OP_HALT
+}opcode_t;
 
 typedef enum {
     FALSE = 0,
     TRUE
 } bool_t;
 
-typedef enum {
+typedef enum{
     ST_OK,
     ST_AYUDA,
+    ST_ERROR_CANT_ARG,
+    ST_ERROR_STDIN_INVALIDO,
     ST_ERROR_PTR_NULO,
     ST_ERROR_ARCHIVO_NO_ENCONTRADO,
     ST_ERROR_MEMORIA,
-    /*Validacion cla*/
     ST_ERROR_MEMORIA_INGRESADA_INVALIDA,
     ST_ERROR_FORMATO_ARCHIVO_INVALIDO,
-    ST_ERROR_STDIN_INVALIDO,
-    /*Carga de estructura*/
-    ST_ERROR_CREAR_SIMPLETRON,
+    ST_ERROR_NODO_VACIO,
+    /*carga de archivo*/
+    ST_ERROR_PALABRA_NO_VALIDA,
     ST_ERROR_LEER_PALABRA,
-            ST_ERROR_PALABRA_NO_VALIDA
-} status_t;
-
-
+    ST_ERROR_CREAR_SIMPLETRON,
+    /*status de ejecutar_codigo*/
+    ST_HALT,
+    ST_ERROR_CAD_NO_ES_ENTERO,
+    ST_ERROR_PALABRA_FUERA_DE_RANGO,
+    ST_ERROR_SEGMENTATION_FAULT,
+    ST_ERROR_CAD_NO_LEIDA,
+    ST_ERROR_OPCODE_INVALIDO,
+    ST_ERROR_MAX_INSTR_SUPERADO,
+    ST_ERROR_ESCRIBIR_BIN,
+    ST_ERROR_MAX_INGRESOS_SUPERADO
+}status_t;
 
 status_t validacion_cla(int argc, char** argv, params_s *param);
 char * get_name_lmsfile(char* name);
