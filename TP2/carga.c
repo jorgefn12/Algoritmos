@@ -55,7 +55,6 @@ status_t crear_lista_memoria(palabra_s **p) {
 }
 
 status_t crear_lista_memoria_nodo(palabra_s **nodo, int dato) {
-    puts("crear lista memoria nodo");
     if (!nodo)
         return ST_ERROR_PTR_NULO;
 
@@ -108,6 +107,9 @@ status_t cargar_archivo(archivo_s *archivo, char *nombre_archivo, formato_t fmt,
     archivo->formato = fmt;
     if (archivo->formato == FMT_TXT) {
         status = cargar_palabras_txt(f, archivo);
+    }
+    if(archivo->formato == FMT_BIN){
+        status = cargar_palabras_bin();
     }
 
     return status;
@@ -183,7 +185,8 @@ status_t cargar_palabras_txt(FILE *f, archivo_s *archivo) {
     }
 
     archivo->cant_palabras = cant_palabras;
-
+    free(linea);
+    
     return ST_OK;
 }
 
@@ -226,6 +229,8 @@ status_t cargar_palabra_stdin(archivo_s *archivo, params_s params) {
         i++;
     }
 
+    free(linea);
+    
     return ST_OK;
 }
 
@@ -277,6 +282,7 @@ status_t insertar_en_simpletron(simpletron_s **simpletron, archivo_s *archivo) {
         return status;
     }
 
+    (*simpletron)->sig = NULL;
     temp->sig = *simpletron;
     *simpletron = temp;
 
@@ -328,6 +334,7 @@ status_t insertar_palabra_al_final_de_lista(palabra_s **frente, long dato) {
         ultimo->sig = nueva_palabra;
     }
 
+    
     return ST_OK;
 }
 
