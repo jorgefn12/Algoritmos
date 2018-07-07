@@ -117,5 +117,8 @@ status_t crear_nodo_simpletron(simpletron_s **simpletron,void *dato);
 status_t crear_lista_memoria(palabra_s **p);
 status_t crear_lista_memoria_nodo(palabra_s **nodo, int dato);
 status_t insertar_palabra_al_principio_de_lista(palabra_s **p,int d);
+
+typedef status_t (*pfx_lms) (simpletron_s*, palabra_s*, palabra_s*); /*Puntero a función con el formato de funciones simpletron*/
+
         
 #endif
