@@ -122,7 +122,8 @@ status_t cargar_palabras_bin(FILE *archivo_entrada, archivo_s *archivo) {
         if ((fread(&temp, sizeof (BUF_SIZE_BYTE), 1, archivo_entrada)) == 1) {
             /*Obtengo los siguientes ocho bits*/
             if ((fread(&temp2, sizeof (BUF_SIZE_BYTE), 1, archivo_entrada)) == 1) {
-                temp2 << BYTE_SHIFT;
+                temp2 = (temp2 & BYTE_MSB);
+                temp2 = temp2 << BYTE_SHIFT;
                 dato = temp2 & temp;
 
                 /*Lo guardo en la memoria*/
@@ -142,6 +143,7 @@ status_t cargar_palabras_bin(FILE *archivo_entrada, archivo_s *archivo) {
             return ST_ERROR_LEER_PALABRA;
     }
 
+    return ST_OK;
 }
 
 status_t cargar_palabras_txt(FILE *f, archivo_s *archivo) {
@@ -260,6 +262,8 @@ status_t palabra_valida_bin(uint16_t palabra) {
 
     if (operando < OPERANDO_MIN || operando > OPERANDO_MAX)
         return ST_ERROR_PALABRA_NO_VALIDA;
+    
+    return ST_OK;
 }
 
 status_t insertar_en_simpletron(simpletron_s **simpletron, archivo_s *archivo) {
