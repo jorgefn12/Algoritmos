@@ -1,3 +1,5 @@
+/*Agregué cant_palabras a archivo_s*/
+
 #ifndef TIPOS__h
 #define TIPOS__h
 
@@ -18,6 +20,7 @@ typedef struct archivo {
     char * nombre;
     formato_t formato;
     palabra_s *memoria;
+    size_t cant_palabras;
 } archivo_s;
 
 typedef struct simpletron {
