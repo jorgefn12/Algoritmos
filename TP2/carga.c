@@ -1,3 +1,5 @@
+/*Agregué las lineas 137, 165, 168 para contar palabras de archivos en el formato txt, que es el que está implementado*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
