@@ -1,12 +1,10 @@
-/*Agregué las lineas 137, 165, 168 para contar palabras de archivos en el formato txt, que es el que está implementado*/
-/* En la linea 245, forcé un NULL al final de la lista de simpletron, que por alguna razón antes no lo tomaba.
-*/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "tipos.h"
 #include "comun.h"
+#include "carga.h"
 
 archivo_s *crear_archivo(void) {
     archivo_s *archivo;
@@ -115,19 +113,31 @@ status_t cargar_archivo(archivo_s *archivo, char *nombre_archivo, formato_t fmt,
     return status;
 }
 
-status_t cargar_palabras_bin(simpletron_s **simpletron) {
-    FILE *archivo_entrada;
-    long dato;
-
-    if ((archivo_entrada = fopen((*simpletron)->archivo->nombre, "rb")) == NULL)
-        return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-
-    printf("ARCHIVO: %s\n", (*simpletron)->archivo->nombre);
-
-    (*simpletron)->archivo->memoria = (palabra_s*) malloc(sizeof (palabra_s));
+status_t cargar_palabras_bin(FILE *archivo_entrada, archivo_s *archivo) {
+    uint16_t temp, temp2, dato;
+    status_t status;
+    
     while (!feof(archivo_entrada)) {
-        if ((fread(&dato, sizeof (BUF_SIZE_BIN), 1, archivo_entrada)) == 1) {
-            insertar_palabra_al_final_de_lista(&(*simpletron)->archivo->memoria, dato);
+        /*Obtengo los primeros ocho bits*/
+        if ((fread(&temp, sizeof (BUF_SIZE_BYTE), 1, archivo_entrada)) == 1) {
+            /*Obtengo los siguientes ocho bits*/
+            if ((fread(&temp2, sizeof (BUF_SIZE_BYTE), 1, archivo_entrada)) == 1) {
+                temp2 << BYTE_SHIFT;
+                dato = temp2 & temp;
+
+                /*Lo guardo en la memoria*/
+                if (archivo->memoria == NULL) {
+                    if ((archivo->memoria = (palabra_s*) malloc(sizeof (palabra_s))) == NULL)
+                        return ST_ERROR_MEMORIA;
+
+                    status = crear_lista_memoria(&(archivo)->memoria);
+
+                    if ((status = crear_lista_memoria_nodo(&(archivo)->memoria, dato)) != ST_OK)
+                        return ST_ERROR_MEMORIA;
+                } else {
+                    status = insertar_palabra_al_final_de_lista(&(archivo)->memoria, dato);
+                }
+            }
         } else
             return ST_ERROR_LEER_PALABRA;
     }
@@ -169,6 +179,7 @@ status_t cargar_palabras_txt(FILE *f, archivo_s *archivo) {
             cant_palabras++;
         }
     }
+
     archivo->cant_palabras = cant_palabras;
 
     return ST_OK;
@@ -218,19 +229,37 @@ status_t cargar_palabra_stdin(archivo_s *archivo, params_s params) {
 
 status_t palabra_valida(long palabra) {
     int operando, opcode;
-    
+
     if (palabra > MAX_PALABRA || palabra < MIN_PALABRA)
         return ST_ERROR_PALABRA_NO_VALIDA;
 
-    operando = palabra%OPCODE_OPERANDO;
-    if(operando<OPERANDO_MIN || operando>OPERANDO_MAX)
+    operando = palabra % OPCODE_OPERANDO;
+    if (operando < OPERANDO_MIN || operando > OPERANDO_MAX)
         return ST_ERROR_PALABRA_NO_VALIDA;
-        
-    opcode = palabra/OPCODE_OPERANDO;
-    if(opcode<OPCODE_MIN || opcode>OPCODE_MAX)
+
+    opcode = palabra / OPCODE_OPERANDO;
+    if (opcode < OPCODE_MIN || opcode > OPCODE_MAX)
         return ST_ERROR_PALABRA_NO_VALIDA;
-    
+
     return ST_OK;
+}
+
+status_t palabra_valida_bin(uint16_t palabra) {
+    uint16_t operando, opcode;
+
+    /*Obtengo el opcode*/
+    opcode = palabra;
+    opcode &= ~BYTE_OPERANDO; /*Pongo en cero los bits del operando*/
+    opcode = opcode>>BYTE_OPCODE_SHIFT; /*Desplazo los bits ocho posiciones*/
+    if (opcode < OPCODE_MIN || opcode > OPCODE_MAX)
+        return ST_ERROR_PALABRA_NO_VALIDA;
+
+    /*Obtengo el operando*/
+    operando = palabra;
+    operando &= ~BYTE_OPCODE;
+
+    if (operando < OPERANDO_MIN || operando > OPERANDO_MAX)
+        return ST_ERROR_PALABRA_NO_VALIDA;
 }
 
 status_t insertar_en_simpletron(simpletron_s **simpletron, archivo_s *archivo) {
@@ -243,7 +272,7 @@ status_t insertar_en_simpletron(simpletron_s **simpletron, archivo_s *archivo) {
     if ((status = crear_nodo_simpletron(&temp, archivo)) != ST_OK) {
         return status;
     }
-    
+
     (*simpletron)->sig = NULL;
     temp->sig = *simpletron;
     *simpletron = temp;
@@ -319,3 +348,4 @@ void imprimir_palabras_de_un_archivo(simpletron_s *simpletron) {
         simpletron->archivo->memoria = simpletron->archivo->memoria->sig;
     }
 }
+
