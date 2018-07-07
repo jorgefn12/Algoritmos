@@ -33,7 +33,7 @@ status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
     fprintf(stdout,"%s\n",MSJ_COMIENZO_EJECUCION);
     
     /*El ciclo se detiene hasta que se acabe la lista de simpletron (NULL)*/
-    while(simpletron){     /*REPARAR, ESTA ENLAZANDO UN SIMPLETRON DEMÁS*/
+    while(simpletron){
         printf("Dirección de simpletron: %p\n",(void*)simpletron);
         printf("Dirección de simpletron->sig: %p\n",(void*)simpletron->sig);
         printf("Dirección de archivo->memoria: %p\n",(void*)&(simpletron->archivo->memoria));
@@ -43,9 +43,9 @@ status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
         /*Recorre la lista de palabras dentro de la memoria de cada simpletron hasta que se acaben las palabras (NULL)*/
         for(simpletron->program_counter = 0, simpletron->acumulador = 0; nodo_actual; simpletron->program_counter++){
             /*Obteniene opcode y operando de la linea correspondiente*/
-            simpletron->opcode = nodo_actual->dato / 10000;
-            simpletron->operando = nodo_actual->dato % 10000;
-            simpletron->instruccion = simpletron->opcode * 10000 + simpletron->operando;            
+            simpletron->opcode = nodo_actual->dato / OPCODE_OPERANDO;
+            simpletron->operando = nodo_actual->dato % OPCODE_OPERANDO;
+            simpletron->instruccion = simpletron->opcode * OPCODE_OPERANDO + simpletron->operando;            
             /*Valida que operando pueda ser accdedido*/
             if(simpletron->operando > simpletron->archivo->cant_palabras || simpletron->operando < 0){
                 fprintf(stdout,"%s\n",MSJ_FIN_EJECUCION);
