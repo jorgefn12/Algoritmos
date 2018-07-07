@@ -45,12 +45,6 @@ void imprimir_mensaje_de_error(status_t status) {
             case ST_HALT:
             fprintf(stderr, "%s. %s\n", MSJ_ST_HALT, MSJ_OPCION_AYUDA);
             break;
-            case ST_ERROR_CAD_NO_ES_ENTERO:
-            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_CAD_NO_ES_ENTERO, MSJ_OPCION_AYUDA);
-            break;
-            case ST_ERROR_PALABRA_FUERA_DE_RANGO:
-            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_PALABRA_FUERA_DE_RANGO, MSJ_OPCION_AYUDA);
-            break;
             case ST_ERROR_SEGMENTATION_FAULT:
             fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_SEGMENTATION_FAULT, MSJ_OPCION_AYUDA);
             break;
