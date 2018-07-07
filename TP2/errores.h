@@ -12,13 +12,14 @@
 #define MSJ_ST_ERROR_LEER_PALABRA "Ocurrio un error al leer palabra del archivo"
 #define MSJ_ST_ERROR_PALABRA_NO_VALIDA "La palabra ingresada no es valida"
 /*ejecutar_codigo*/
-#define MSJ_ST_HALT ""
-#define MSJ_ST_ERROR_CAD_NO_ES_ENTERO ""
-#define MSJ_ST_ERROR_PALABRA_FUERA_DE_RANGO ""
-#define MSJ_ST_ERROR_SEGMENTATION_FAULT ""
-#define MSJ_ST_ERROR_CAD_NO_LEIDA ""
-#define MSJ_ST_ERROR_OPCODE_INVALIDO ""
-#define MSJ_ST_ERROR_MAX_INSTR_SUPERADO ""
-#define MSJ_ST_ERROR_MAX_INGRESOS_SUPERADO ""
-#define MSJ_ST_ERROR_NODO_VACIO ""
+#define MSJ_ST_HALT "Ejecución de archivo finalizado"
+#define MSJ_ST_ERROR_SEGMENTATION_FAULT "Se trató de ingresar a memoria no pedida por la consola"
+#define MSJ_ST_ERROR_OPCODE_INVALIDO "Se trató de ejecutar una instrucción no espeficada por el lenguaje"
+#define MSJ_ST_ERROR_MAX_INSTR_SUPERADO "Se superó la máxima cantidad de instrucciones operadas"
+#define MSJ_ST_ERROR_MAX_INGRESOS_SUPERADO "Se superó la máxima cantidad de intentos de ingreso"
+#define MSJ_ST_ERROR_NODO_VACIO "Se intenta acceder a memoria sin contenido"
 #define MSJ_ST_ERROR_ESCRIBIR_BIN "Ocurrio un errror al esribir el archivo binario"
+
+void imprimir_ayuda() {
+
+}
