@@ -26,6 +26,7 @@ int opcode_validos[] = {
 status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
     palabra_s * nodo_inicial;
     palabra_s * nodo_actual;
+    size_t posicion_actual;
     size_t i;
     status_t status;
     pfx_lms operacion;
@@ -39,10 +40,11 @@ status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
         nodo_actual = simpletron->archivo->memoria;
         /*Recorre la lista de palabras dentro de la memoria de cada simpletron hasta que se acaben las palabras (NULL)*/
         for(simpletron->program_counter = 0, simpletron->acumulador = 0; nodo_actual; simpletron->program_counter++){
+            posicion_actual = simpletron->program_counter;
             /*Obteniene opcode y operando de la linea correspondiente*/
-            simpletron->opcode = nodo_actual->dato / OPCODE_OPERANDO;
-            simpletron->operando = nodo_actual->dato % OPCODE_OPERANDO;
-            simpletron->instruccion = simpletron->opcode * OPCODE_OPERANDO + simpletron->operando;            
+            simpletron->opcode = nodo_actual->dato / 10000;
+            simpletron->operando = nodo_actual->dato % 10000;
+            simpletron->instruccion = simpletron->opcode * 10000 + simpletron->operando;            
             /*Valida que operando pueda ser accdedido*/
             if(simpletron->operando > simpletron->archivo->cant_palabras || simpletron->operando < 0){
                 fprintf(stdout,"%s\n",MSJ_FIN_EJECUCION);
@@ -65,7 +67,7 @@ status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
                 break;
             }
             /*Avanza lista*/
-            nodo_actual = saltar_lista(nodo_inicial, nodo_actual, simpletron->program_counter, simpletron->program_counter + 1);
+            nodo_actual = saltar_lista(nodo_inicial, nodo_actual, posicion_actual, simpletron->program_counter + 1);
         }
         /*Avanza al siguiente simpletron en la lista*/
         simpletron = simpletron->sig;
@@ -136,19 +138,20 @@ status_t lms_leer(simpletron_s * simpletron, palabra_s * nodo_inicial, palabra_s
     size_t i;
     long temp;
     char* pch;
-    
     for(i = 0; i < MAX_INGRESOS; i++){
         fprintf(stdout,"%s ",MSJ_INGRESO_PALABRA);
         if(fgets(aux, MAX_STR, stdin) == NULL){
             fprintf(stdout, "%s %s\n", MSJ_NUEVO_INGRESO, MSJ_ST_ERROR_LEER_PALABRA);
+            
         }
         else if((temp = strtol(aux, &pch, 10)) > MAX_PALABRA || temp < MIN_PALABRA || (*pch != '\n' && *pch != '\0' && *pch != EOF)){
             fprintf(stdout, "%s %s\n", MSJ_NUEVO_INGRESO, MSJ_ST_ERROR_PALABRA_NO_VALIDA);
         }
-        break;
+        else{
+            break;
+        }
     }
     if(i == MAX_INGRESOS){
-        fprintf(stdout,"%s\n",MSJ_FIN_EJECUCION);
         return ST_ERROR_MAX_INGRESOS_SUPERADO;
     }
     if((nodo_actual = saltar_lista(nodo_inicial,nodo_actual,simpletron->program_counter,simpletron->operando)) == NULL)
