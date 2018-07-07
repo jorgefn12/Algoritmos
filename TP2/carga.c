@@ -134,6 +134,7 @@ status_t cargar_palabras_txt(FILE *f, archivo_s *archivo) {
     char *linea, *pch;
     long dato;
     status_t status;
+    size_t cant_palabras;
 
     if ((linea = (char*) malloc(sizeof (char)*MAX_STR)) == NULL)
         return ST_ERROR_MEMORIA;
@@ -161,8 +162,10 @@ status_t cargar_palabras_txt(FILE *f, archivo_s *archivo) {
             } else {
                 status = insertar_palabra_al_final_de_lista(&(archivo)->memoria, dato);
             }
+            cant_palabras++;
         }
     }
+    archivo->cant_palabras = cant_palabras;
 
     return ST_OK;
 }
