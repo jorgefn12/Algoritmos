@@ -34,9 +34,6 @@ status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
     
     /*El ciclo se detiene hasta que se acabe la lista de simpletron (NULL)*/
     while(simpletron){
-        printf("Dirección de simpletron: %p\n",(void*)simpletron);
-        printf("Dirección de simpletron->sig: %p\n",(void*)simpletron->sig);
-        printf("Dirección de archivo->memoria: %p\n",(void*)&(simpletron->archivo->memoria));
         /*Guarda registros para no perder referencia de la posicion de la lista*/
         nodo_inicial = simpletron->archivo->memoria;
         nodo_actual = simpletron->archivo->memoria;
