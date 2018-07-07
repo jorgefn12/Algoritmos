@@ -34,7 +34,7 @@ status_t ejecutar_codigo(simpletron_s * simpletron, params_s * params){
     fprintf(stdout,"%s\n",MSJ_COMIENZO_EJECUCION);
     
     /*El ciclo se detiene hasta que se acabe la lista de simpletron (NULL)*/
-    while(simpletron){
+    while(simpletron->sig){
         /*Guarda registros para no perder referencia de la posicion de la lista*/
         nodo_inicial = simpletron->archivo->memoria;
         nodo_actual = simpletron->archivo->memoria;
