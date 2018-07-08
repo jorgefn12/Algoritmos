@@ -1,1 +1,29 @@
 https://www.overleaf.com/17021302mbpxbfrzxmjb#/64992291/
+
+
+\section{Funcionamiento del programa}
+\subsection{Validación de argumentos pasados por la terminal}
+\textbf{Mínima cantidad de argumentos ingresados:} La cantidad mínima de argumentos ingresados para el correcto funcionamiento del programa será de 2 argumentos. Este caso se da cuando el usuario ingresa \texttt{./simpletron --help}, si no se cumple esta condición, el programa imprime un mensaje de error y finaliza.\\
+
+
+\textbf{Ayuda:} en el caso de que el usuario pide ayuda, se pide que solo se ingrese el flag de ayuda.\\
+
+
+\textbf{Memoria:} se pueden dar los siguientes casos:
+\begin{itemize}
+\item[-] \texttt{./simpletron -m}: se toma por default una memoria de 50
+\item[-] \texttt{./simpletron -m a100}: la función devuelve un error. No se acepta que se ingresen caracteres alfabéticos.
+\item[-] \texttt{./simpletron -m 150a}: la función devuelve un error. No se acepta que se ingresen caracteres alfabéticos.
+\item[-] \texttt{./simpletron -m 150,1}: la función devuelve un error. No se acepta que se ingresen cifras decimales.
+\item[-] \texttt{./simpletron -m -50}: la función devuelve un error. La memoria debe ser positiva y mayor a cero.
+\end{itemize}
+se verifica que si el usuario ingresó el flag de memoria, sea seguido de un entero positivo.\\
+
+
+\textbf{Formato}: se verifica que el formato ingresado sea \texttt{txt} ó \texttt{bin}, caso contrario la función devuelve un mensaje de error.
+
+
+\textbf{Archivos}: el usuario deberá especificar el formato en el que será leído el archivo de entrada ingresando antes del nombre del archivo \texttt{t:} para que el archivo sea leído como un texto o \texttt{b:} para que el archivo sea procesado como un archivo binario. 
+
+\subsection{Carga de listas}
+Por cada archivo de entrada ingresado se crea un simpletron\_s y dentro del mismo un archivo\_s que contiene las palabras de cada archivo. Luego dependiendo si el archivo de entrada es un archivo binario o de texto, se procede a cargar la memoria con \\cargar\_palabras\_bin o \\cargar\_palabras\_txt respectivamente.
