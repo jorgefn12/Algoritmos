@@ -5,7 +5,9 @@
 #include "tipos.h"
 #include "comun.h"
 #include "carga.h"
-
+/*Función para crear un nodo de la estructura archivo_s. Si hubo algún error retorna NULL por el nombre, de lo contrario,
+* un puntero a dicho nodo
+*/
 archivo_s *crear_archivo(void) {
     archivo_s *archivo;
 
@@ -17,7 +19,10 @@ archivo_s *crear_archivo(void) {
 
     return archivo;
 }
-
+/*
+*Función para crear una estrucutra simpletron e inicializar sus componentes. Retorna NULL si hubo un error, de lo contrario, un puntero a
+*dicha estructura.
+*/
 simpletron_s *crear_simpletron(void) {
     simpletron_s *simpletron = NULL;
 
@@ -33,6 +38,10 @@ simpletron_s *crear_simpletron(void) {
     return simpletron;
 }
 
+/*Función para crear un nodo de la estructura simpletron_s. Recibe un puntero doble a estructura simpletron_s y un dato.
+Al finalizar, guarda el puntero hacia el nodo, en el puntero pasado por argumento y retorna por el nombre el estado de la
+operacion
+*/
 status_t crear_nodo_simpletron(simpletron_s **simpletron, void *dato) {
     if (simpletron == NULL)
         return ST_ERROR_PTR_NULO;
@@ -47,6 +56,9 @@ status_t crear_nodo_simpletron(simpletron_s **simpletron, void *dato) {
     return ST_OK;
 }
 
+/*
+*
+*/
 status_t crear_lista_memoria(palabra_s **p) {
     if (!p)
         return ST_ERROR_PTR_NULO;
