@@ -56,9 +56,6 @@ status_t crear_nodo_simpletron(simpletron_s **simpletron, void *dato) {
     return ST_OK;
 }
 
-/*
-*
-*/
 status_t crear_lista_memoria(palabra_s **p) {
     if (!p)
         return ST_ERROR_PTR_NULO;
@@ -66,6 +63,10 @@ status_t crear_lista_memoria(palabra_s **p) {
     return ST_OK;
 }
 
+/*Función para crear un nodo de la estructura palabra_s. Recibe un puntero doble a estructura palabra_s y un dato.
+Al finalizar, guarda el puntero hacia el nodo, en el puntero pasado por argumento y retorna por el nombre el estado de la
+operacion
+*/
 status_t crear_lista_memoria_nodo(palabra_s **nodo, int dato) {
     if (!nodo)
         return ST_ERROR_PTR_NULO;
@@ -79,6 +80,12 @@ status_t crear_lista_memoria_nodo(palabra_s **nodo, int dato) {
     return ST_OK;
 }
 
+
+/*Función para realizar la carga de palabras en la memoria de cada simpletron
+recibe un puntero doble a simpletron_s y una estrucutra params_s. De acuerdo a la configuración elegida mediante
+CLA, delega su procesamiento a otras funciones. Al finalizar exitosamente, guarda todas las palabras de cada archivo en
+la estructura simpletron. Devuelve por el nombre el estado de la operacion
+*/
 status_t cargar_simpletron(simpletron_s ** frente, params_s params) {
     archivo_s *archivo = NULL;
     int i;
