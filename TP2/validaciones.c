@@ -1,9 +1,3 @@
-/*MODIFICACIONES
-*Varias correcciones, la función debería estar funcionando correctamente
-*Se eliminan validaciones de CANT_ARG_MIN, porque el mínimo es 1 (./simpletron)
-*/
-
-
 /*
 La función recorre argv y va validando los argumentos por orden este orden de precedencia m->f->archivos
 -h necesita estar como unico argumento, sino devuelve error.
@@ -39,13 +33,6 @@ status_t validacion_cla(int argc, char** argv, params_s *param) {
         if( argv[j] == NULL)
             return ST_ERROR_PTR_NULO;
     }
-    /*Caso hipotetico: ./simpletron h ----> En este caso se debería tomar h como un archivo de entrada?
-    *                                       porque esta validacion estaría considerando ./simpletron t:archivo como error
-    *
-    *if (argc == CANT_MIN_ARG + 1 && ((strcmp(argv[POS_ARGV1], FLAG_CLA_AYUDA_CORTO)) != 0 || (strcmp(argv[POS_ARGV1], FLAG_CLA_AYUDA_LARGO)) != 0))
-    *    return ST_ERROR_FLAG_NO_RECONOCIDO;
-    */
-
     /*-----------------------------DEFAULT-----------------------------*/
     param->cant_memoria = DEFAULT_MEMORIA;
     param->cant_archivos = DEFAULT_CANT_ARCHIVOS;
@@ -80,7 +67,6 @@ status_t validacion_cla(int argc, char** argv, params_s *param) {
     }
 
     /*---------------------------------FORMATO SALIDA---------------------------------*/
-    /*Hacemos un bool_t o un typedef con los tipos de archivos*/
     /*Indica el formato de la salida. Si FMT es txt , el formato debe ser texto. Si*/
     /*FMT es bin, el formato debe ser binario. Por omisión, el formato es texto.*/
     /*Busco el flag de formato*/
