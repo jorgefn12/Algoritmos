@@ -1,5 +1,13 @@
 /*Definiciones TDA Vector y sus primitivas*/
 /*El codigo esta funcionando, pero todavia no chequeé las si tiene fugas. No debería*/
+
+#include "comun.h"
+#include "tipos.h"
+#include "memoria.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct vector{
   size_t usado, pedido;
   void * datos;
