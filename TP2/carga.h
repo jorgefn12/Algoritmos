@@ -36,3 +36,5 @@ status_t insertar_palabra_al_principio_de_lista(palabra_s **p, int d);
 status_t insertar_palabra_al_final_de_lista(palabra_s **frente, long dato);
 char* strdup(const char *sc);
 void imprimir_palabras_de_un_archivo(simpletron_s *simpletron);
+
+#endif
