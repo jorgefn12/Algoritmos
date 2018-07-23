@@ -61,7 +61,7 @@ status_t insertar_nodo_final(lista_t * lista, void * dato);
 status_t insertar_nodo_ppio(lista_t * lista, void * dato);
 void destruir_lista(lista_t * lista);
 void imprimir_lista_int(lista_t lista);
-bool_t guardar_lista_en_vector(lista_t lista, vector_t * vector);
+bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector);
 /***************************************MEMORIA.H***********************************************/
 
 vector_t * crear_vector(size_t n);
@@ -167,8 +167,6 @@ status_t cargar_lista_palabras_stdin(lista_t * lista);
 int get_opcode_bin(int palabra);
 uint get_operando_bin(int palabra);
 /**********************************************************************************************/
-void cargar_vector(vector_t ** vector, lista_t * lista);
-
 void debug(){
     static size_t i;
     
@@ -221,6 +219,9 @@ int main(int argc, char** argv){
         cargar_lista_palabras(argumentos.archivo_entrada[i], &lista);
         puts("Imprimiendo lista");
         imprimir_lista_int(lista);
+        guardar_lista_en_vector(lista, &simply->memoria[i]);
+        vector_iterar_int(simply->memoria[i],imprimir_int, stdout);
+        putchar('\n');
     }
     printf("Cantidad archivos cerrados: %lu\n", cerrar_archivos(&argumentos));
     destruir_simpletron(&simply);
@@ -292,18 +293,6 @@ int main(int argc, char** argv){
     vector_destruir(&v);
     */
     return EXIT_SUCCESS;
-}
-
-void cargar_vector(vector_t ** vector, lista_t * lista){
-    size_t i = 1;
-    (*vector) = crear_vector(1);
-    while(*lista){
-        vector_redimensionar(*vector, i);
-        vector_guardar_int(*vector,i,(int*)&(*lista)->dato);
-        
-        (*lista) = (*lista)->sig;
-        i++;
-    }
 }
 
 /*****************************LECTORES.C********************************************************/
@@ -722,26 +711,22 @@ void imprimir_lista_int(lista_t lista){
     }
     putchar('\n');
 }
-bool_t guardar_lista_en_vector(lista_t lista, vector_t * vector){
-    vector_t * aux;
+bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector){
     size_t i;
+
     if(vector == NULL)
         return FALSE;
-    if((aux = crear_vector(1)) == NULL)
+    if((*vector = crear_vector(1)) == NULL)
         return FALSE;
-    *vector = *aux;
+    
     for(i = 1; lista != NULL; i++){
-        /*
-        printf("Pedido: %d\n",vector->pedido);
-        printf("Usado: %d\n",vector->usado);
-        printf("Contenido vector[0]: %d\n",vector->datos);
-        */
-        if(!vector_redimensionar(vector, i)){
-            vector_destruir(&vector);
+
+        if(!vector_redimensionar(*vector, i)){
+            vector_destruir(vector);
             return FALSE;
         }
-        if(!vector_guardar_int(vector,i,lista->dato)){
-            vector_destruir(&vector);
+        if(!vector_guardar_int(*vector,i,(int*)&lista->dato)){
+            vector_destruir(vector);
             return FALSE;
         }        
         lista = lista->sig;
