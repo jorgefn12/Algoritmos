@@ -10,7 +10,10 @@
 #include <string.h>
 
 /*Aviso al usuario sobre la existencia de este tipo*/
-typedef struct vector vector_t;
+typedef struct vector{
+    size_t usado, pedido;
+    void * datos;
+} vector_t; /********ENCAPSULAR luego de probar programa*************/
 /********************Primitivas****************/
 /*Ver documentacion en .c*/
 vector_t * crear_vector(size_t n);
