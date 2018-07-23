@@ -210,10 +210,9 @@ int main(int argc, char** argv){
         printf("Cantidad memoria: %ld\n", argumentos.cant_memoria);
         printf("Cantidad archivos entrada: %ld\n", argumentos.cant_archivos);
     }
-    /*
+    
     simply = crear_simpletron(&argumentos);
     imprimir_registros_simpletron(simply, stdout);
-    */
 
     printf("Cantidad archivos abiertos: %lu\n", abrir_archivos(&argumentos));
     
