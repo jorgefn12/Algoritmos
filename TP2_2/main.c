@@ -28,5 +28,48 @@ int main(int argc, char** argv){
     printf("memoria pedida: %d\n", v->pedido);
     vector_destruir(&v);
     
+    
+    
+    
+    
+    
+    
+    /*******************************************************************/
+    /*
+    MAIN PARA IMPRIMIR LISTAS. Ej:  ./main -m 60 -f txt suma.txt maximo.txt b:nulo.sac 
+    simpletron_t * simply = NULL;
+    status_t st;
+    params_t argumentos;
+    lista_t lista;
+    size_t i;
+    
+    validacion_cla(argc, argv, &argumentos);
+    if(st == ST_OK){
+        for(i=0;i<argumentos.cant_archivos;i++){
+            printf("Archivo entrada %lu: %s [%d]\n", i+1, argumentos.archivo_entrada[i].nombre ? argumentos.archivo_entrada[i].nombre : "stdin(null)", argumentos.archivo_entrada[i].formato);
+        }
+        printf("Archivo salida: %s [%d]\n",argumentos.archivo_salida->nombre, argumentos.archivo_salida->formato);
+        printf("Cantidad memoria: %ld\n", argumentos.cant_memoria);
+        printf("Cantidad archivos entrada: %ld\n", argumentos.cant_archivos);
+    }
+    simply = crear_simpletron(&argumentos);
+    imprimir_registros_simpletron(simply, stdout);
+    
+
+    printf("Cantidad archivos abiertos: %lu\n", abrir_archivos(&argumentos));
+    
+    for(i = 0; i < argumentos.cant_archivos; i++){
+        crear_lista(&lista);
+        cargar_lista_palabras(argumentos.archivo_entrada[i], &lista);
+        puts("Imprimiendo lista");
+        imprimir_lista_int(lista);
+        
+    }
+    printf("Cantidad archivos cerrados: %lu\n", cerrar_archivos(&argumentos));
+    destruir_simpletron(&simply);
+    
+    return EXIT_SUCCESS;
+    */
+    /*******************************************************************/
     return EXIT_SUCCESS;
 }
