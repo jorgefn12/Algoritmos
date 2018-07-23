@@ -1,4 +1,5 @@
 #include "argumentos.h"
+#include "comun.h"
 #include "tipos.h"
 #include <stdio.h>
 #include <stdlib.h>
