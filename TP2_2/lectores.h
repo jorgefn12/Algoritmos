@@ -1,6 +1,12 @@
 #ifndef LECTORES__H
 #define LECTORES__H
 
+#include "tipos.h"
+#include "comun.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define MASK_OPERANDO 0x01FF
 #define MASK_OPCODE 0xFE00
 #define BYTE_SHIFT 8
