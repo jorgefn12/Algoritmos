@@ -1,6 +1,11 @@
 #ifndef ARGUMENTOS__H
 #define ARGUMETNOS__H
 
+#include "tipos.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define DEFAULT_MEMORIA 50
 #define DEFAULT_CANT_ARCHIVOS 1
 #define FLAG_CLA_AYUDA_CORTO "-h"
