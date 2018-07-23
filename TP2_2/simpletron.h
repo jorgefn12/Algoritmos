@@ -1,6 +1,12 @@
 #ifndef SIMPLETRON__H
 #define SIMPLETRON__H
 
+#include "tipos.h"
+#include "comun.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define MIN_PALABRA -9999999
 #define MAX_PALABRA 9999999
 #define OPCODE_OPERANDO_MULTIPLIER 10000
