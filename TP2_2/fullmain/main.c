@@ -782,7 +782,7 @@ bool_t vector_redimensionar(vector_t *v, size_t n){
     aux = (void*)calloc(1, n * sizeof(void*));
     if(!aux)
         return FALSE;
-    v->datos = memcpy(aux, v->datos, n > v->usado ? v->usado : n);
+    v->datos = memcpy(aux, v->datos, n > v->usado ? v->usado * sizeof(void*) : n * sizeof(void*));
     v->pedido = n;
     if(v->usado > v->pedido)
         v->usado = v->pedido;
