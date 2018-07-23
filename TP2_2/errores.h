@@ -1,6 +1,12 @@
 #ifndef ERRORES__H
 #define ERRORES__H
 
+#include "tipos.h"
+#include "comun.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define MSJ_OPCION_AYUDA "Ingrese: .\\simpletron -h o .\\simpletron --help para mas informacion."
 #define MSJ_ST_OK "La operación finalizó correctamente"
 #define MSJ_ST_AYUDA "Leer documentación. Escribir función para mensaje de ayuda"
