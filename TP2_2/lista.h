@@ -2,6 +2,12 @@
 #ifndef LISTA__H
 #define LISTA__H
 
+#include "tipos.h"
+#include "comun.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct nodo{
     struct nodo * sig;
     void * dato;
