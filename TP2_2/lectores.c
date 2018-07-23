@@ -76,7 +76,6 @@ status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista){
     char buffer[MAX_STR], *pch;
     int palabra;
     status_t st;
-    int datos[] = {0,1,2,3,4,5,6,7,8,9};
 
     while((fgets(buffer, MAX_STR, stream)) != NULL){
         pch = strtok(buffer, DELIMITADOR_COMENTARIO);
