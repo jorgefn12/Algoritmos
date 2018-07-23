@@ -15,7 +15,7 @@ typedef struct vector{
 
 /******************Primitivas*******************/
 
-/*Crea TDA vector de una dimension, retorna NULL si ocurre un error*/
+/*Crea vector de 1 dimension*/
 vector_t * crear_vector(size_t n){
     vector_t * v;
     
@@ -33,12 +33,10 @@ vector_t * crear_vector(size_t n){
     v->pedido = n;
     return v;
 }
-
-/*Si n es mayor a la longitud del vector-> pide mas memoria. Si es menor-> libera la memoria de los ultimos elementos sobrantes
-* Rellena la memoria solicitada que no está en uso con ceros.
-*/
+/*Si n es mayor a la longitud del vector, pide mas memoria. Si es menor, libera la memoria de los ultimos elementos sobrantes
+*  Rellena la memoria solicitada que no está en uso con ceros.*/
 bool_t vector_redimensionar(vector_t *v, size_t n){
-    void ** aux;
+    void * aux;
     size_t i;
     
     if(!v || n <= 0)
@@ -47,37 +45,27 @@ bool_t vector_redimensionar(vector_t *v, size_t n){
     if(n == v->pedido)
         return TRUE;
     
-    if(n > v->pedido){
-        aux = (void**)realloc(v->datos, n * sizeof(void*));
-        if(!aux)
-            return FALSE;
-        v->datos = memset(aux[v->pedido], 0, n - (v->pedido) - 1);
-        v->pedido = n;
-        return TRUE;
-    }
-    
-    if(n < v->pedido){
-        aux = (void**)calloc(1, n * sizeof(void*));
-        if(!aux)
-            return FALSE;
-        v->datos = memcpy(aux, v->datos, v->usado);
-        v->pedido = n;
-        if(v->usado > v->pedido)
-            v->usado = v->pedido;
-        return TRUE;
-    }
+    aux = (void*)calloc(1, n * sizeof(void*));
+    if(!aux)
+        return FALSE;
+    v->datos = memcpy(aux, v->datos, n > v->usado ? v->usado : n);
+    v->pedido = n;
+    if(v->usado > v->pedido)
+        v->usado = v->pedido;
+    return TRUE;
 }
-
-/*Destruye vector de 1 dimension*/
+/*Destruye vectores de 1 dimension*/
 void vector_destruir(vector_t ** v){
     if(v && *v){
-        if((*v)->datos)
+        if((*v)->datos){
             free((*v)->datos);
+            (*v)->datos = NULL;
+        }
         free(*v);
         *v = NULL;
     }
 }
-/*Guarda lo apuntado por dato en la posicion i+1 del TDA vector apuntado por v. Retorna booleano*/
+/*Guarda lo apuntado por dato en la posicion i-1 del TDA vector apuntado por v*/
 /*Esta funcion trabaja con datos y vectores de enteros*/
 bool_t vector_guardar_int(vector_t * v, size_t i, int * dato){
     if(!v || i > v->pedido || i < 1)
@@ -85,29 +73,30 @@ bool_t vector_guardar_int(vector_t * v, size_t i, int * dato){
     ((int*)v->datos)[i-1]= *dato;
     if(v->usado < i)
         v->usado = i;
+    /*
+    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[0]);
+    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[1]);
+    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[2]);
+    */
     return TRUE;
 }
-
 /*No se puede iterar genericamente elementos que apunten a void*
  Para acceder a su contenido, el compilador necesita saber de qué tipo es.
  Por lo que se necesitan varias funciones de iteracion dependiendo del tipo.
- Esta funcion itera sobre un TDA Vector de tipo int
- */
+ Esta funcion itera sobre un TDA Vector de tipo int*/
 void vector_iterar_int(vector_t * v, void (*func)(void *,void *), void * arg){
     size_t i;
     
     if(v && func){
-        for(i = 0; i < v->pedido; i++){
+        for(i = 0; i < v->pedido; i++){      
             (*func)(&(((int*)v->datos)[i]), arg);
         }
     }
 }
-
 /*Imprime por stream (archivo ya abierto) el contenido de las direcciones apuntados por vector_int*
-* Sólo trabajo con enteros.
-*/
-void imprimir_vector(void * vector_int, void* stream){
-    fprintf(stream, "%i ", *(int*)vector_int);
+* Sólo trabajo con enteros.*/
+void imprimir_int(void * dato, void* stream){
+    fprintf(stream, "%i ", *(int*)dato);
 }
 
 
