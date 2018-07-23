@@ -4,7 +4,6 @@
 
 #include "comun.h"
 #include "tipos.h"
-#include "memoria.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
