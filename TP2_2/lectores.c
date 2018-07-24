@@ -1,8 +1,8 @@
 #include "lectores.h"
 #include "tipos.h"
+#include "argumentos.h"
+#include "listas.h"
 #include "comun.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 int abrir_archivos(params_t * param){
@@ -58,40 +58,42 @@ int cerrar_archivos(params_t * param){
 }
 /*La destruccion de las listas se realiza afuera de esta función, recibe una lista vacia*/
 /*Revisar optimizacion/correccion de funciones de carga*/
-status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista){
+status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t * cant_palabras){
     if(lista == NULL)
         return ST_ERROR_PTR_NULO;
     switch(archivo.formato){
         case FMT_TXT:
             if(archivo.nombre == NULL)
-                return cargar_lista_palabras_stdin(lista);
-            return cargar_lista_palabras_txt(archivo.stream, lista);
+                return cargar_lista_palabras_stdin(lista, cant_palabras);
+            return cargar_lista_palabras_txt(archivo.stream, lista, cant_palabras);
         case FMT_BIN:
-            return cargar_lista_palabras_bin(archivo.stream, lista);
+            return cargar_lista_palabras_bin(archivo.stream, lista, cant_palabras);
         default:
             return ST_ERROR_FORMATO_ARCHIVO_INVALIDO;
     }
 }
-status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista){
+status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista, size_t * cant_palabras){
     char buffer[MAX_STR], *pch;
-    int palabra;
+    palabra_t palabra;
     status_t st;
 
     while((fgets(buffer, MAX_STR, stream)) != NULL){
         pch = strtok(buffer, DELIMITADOR_COMENTARIO);
         palabra = strtol(buffer, &pch, 10);
-        if(!palabra_es_valida(palabra))
+        if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra))
             return ST_ERROR_PALABRA_NO_VALIDA;
         if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
             return st;
+        if(!--(*cant_palabras))
+            return ST_MEMORIA_INSUFICIENTE;
     }
     if(ferror(stream))
         return ST_ERROR_LEER_PALABRA;
     return ST_OK;
 }
-status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista){
+status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista, size_t * cant_palabras){
     uchar high_byte, low_byte;
-    int palabra, opcode;
+    palabra_t palabra, opcode;
     uint operando;
     status_t st;
     while((fread(&high_byte,1,1,stream) == 1)){
@@ -107,17 +109,45 @@ status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista){
         palabra = opcode * OPCODE_OPERANDO_MULTIPLIER + (opcode >= 0 ? operando : -operando);
         if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
             return st;
+        
+        if(!--(*cant_palabras))
+            return ST_MEMORIA_INSUFICIENTE;
     }
     if(ferror(stream))
         return ST_ERROR_LEER_PALABRA;
     return ST_OK;
 }
-status_t cargar_lista_palabras_stdin(lista_t * lista){
+status_t cargar_lista_palabras_stdin(lista_t * lista, size_t * cant_palabras){
+    char buffer[MAX_STR], *pch;
+    palabra_t palabra;
+    status_t st;
+    size_t i = 0;
     
+    fprintf(stdout, "%s\n", MSJ_BIENVENIDO_SIMPLETRON);
+    fprintf(stdout, "%02lu ? ", i);
+    fgets(buffer, MAX_STR, stdin);
+    
+    while (i < *cant_palabras) {
+        if (strcmp(buffer, STR_FIN_CARGA)) {
+            palabra = strtol(buffer, &pch, 10);
+            /*Verificaion de que la palabra cumpla requisitos.....*/
+            if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra))
+                return ST_ERROR_PALABRA_NO_VALIDA;
+            /*Lo guardo en la memoria*/
+            if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
+                return st;
+            i++;
+            fprintf(stdout, "%02lu ? ", i);
+            fgets(buffer, MAX_STR, stdin);
+        }
+        else
+            break;
+    }
+    return ST_OK;
 }
-int get_opcode_bin(int palabra){
+int get_opcode_bin(palabra_t palabra){
     return palabra & MASK_MSB ? -((((~palabra) & MASK_OPCODE) >> OPCODE_SHIFT) +1) : palabra >> OPCODE_SHIFT;
 }
-uint get_operando_bin(int palabra){
+uint get_operando_bin(palabra_t palabra){
     return palabra & MASK_OPERANDO;
 }

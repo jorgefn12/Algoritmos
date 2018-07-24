@@ -1,20 +1,12 @@
-/*Definiciones TDA Vector y sus primitivas*/
-/*El codigo esta funcionando, pero todavia no chequeé las si tiene fugas. No debería*/
-
-#include "comun.h"
-#include "tipos.h"
 #include "memoria.h"
-#include <stdio.h>
+#include "tipos.h"
 #include <stdlib.h>
 #include <string.h>
 
 typedef struct vector{
-  size_t usado, pedido;
-  void * datos;
+    size_t usado, pedido;
+    void * datos;
 } vector_t;
-
-/******************Primitivas*******************/
-
 /*Crea vector de 1 dimension*/
 vector_t * crear_vector(size_t n){
     vector_t * v;
@@ -37,18 +29,26 @@ vector_t * crear_vector(size_t n){
 *  Rellena la memoria solicitada que no está en uso con ceros.*/
 bool_t vector_redimensionar(vector_t *v, size_t n){
     void * aux;
-    size_t i;
     
     if(!v || n <= 0)
         return FALSE;
     
     if(n == v->pedido)
         return TRUE;
-    
+
     aux = (void*)calloc(1, n * sizeof(void*));
     if(!aux)
         return FALSE;
-    v->datos = memcpy(aux, v->datos, n > v->usado ? v->usado : n);
+    memcpy(aux, v->datos, n > v->usado ? (v->usado) * sizeof(void*) : (n) * sizeof(void*));
+    free(v->datos);
+    v->datos = (void*)calloc(1, n * sizeof(void*));
+    if(!v->datos){
+    	free(aux);
+        return FALSE;
+    }
+    memcpy(v->datos, aux, n > v->usado ? (v->usado) * sizeof(void*) : (n) * sizeof(void*));
+    free(aux);
+
     v->pedido = n;
     if(v->usado > v->pedido)
         v->usado = v->pedido;
@@ -73,11 +73,7 @@ bool_t vector_guardar_int(vector_t * v, size_t i, int * dato){
     ((int*)v->datos)[i-1]= *dato;
     if(v->usado < i)
         v->usado = i;
-    /*
-    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[0]);
-    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[1]);
-    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[2]);
-    */
+
     return TRUE;
 }
 /*No se puede iterar genericamente elementos que apunten a void*
@@ -98,22 +94,13 @@ void vector_iterar_int(vector_t * v, void (*func)(void *,void *), void * arg){
 void imprimir_int(void * dato, void* stream){
     fprintf(stream, "%i ", *(int*)dato);
 }
-
-
-/*Pedazo de codigo para probar funcionamiento
-int main(int argc, char** argv) {
-    vector_t * v;
-    int temp = 99999;
-    
-    v = crear_vector(10);
-    vector_guardar_int(v,5,&temp);
-    vector_iterar_int(v,imprimir_vector, stdout);
-    printf("\nmemoria usada: %d\n",v->usado);
-    printf("memoria pedida: %d\n",v->pedido);
-    vector_iterar_int(v,imprimir_vector, stdout);
-    vector_destruir(&v);
-    vector_iterar_int(v,imprimir_vector, stdout);
-    
-    return EXIT_SUCCESS;
+/*Se DEBE validar el puntero antes de usar la funcion*/
+int obtener_dato(vector_t * v, size_t i){
+    return ((int*)(v->datos))[i - 1];
 }
-*/
+int obtener_usado(vector_t * v){
+    return v == NULL ? EOF : v->usado;
+}
+int obtener_pedido(vector_t *v){
+    return v == NULL ? EOF : v->pedido;
+}

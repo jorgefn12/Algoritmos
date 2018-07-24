@@ -1,8 +1,7 @@
 #include "argumentos.h"
-#include "comun.h"
 #include "tipos.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 status_t validacion_cla(int argc, char** argv, params_t *param) {
@@ -40,7 +39,7 @@ status_t validacion_cla(int argc, char** argv, params_t *param) {
         return ST_OK;
     /*---------------------------------AYUDA---------------------------------*/
     /*Forma de ejecutar: ./simpletron -h o --help */
-    if (argc == 2 && !strcmp(argv[i], FLAG_CLA_AYUDA_CORTO) || !strcmp(argv[i], FLAG_CLA_AYUDA_LARGO)){
+    if (argc == 2 && (!strcmp(argv[i], FLAG_CLA_AYUDA_CORTO) || !strcmp(argv[i], FLAG_CLA_AYUDA_LARGO))){
         destruir_params(param);
         return ST_AYUDA;
     }
@@ -97,15 +96,6 @@ status_t validacion_cla(int argc, char** argv, params_t *param) {
         
         if(!stdin_flag && param->archivo_entrada[cant_archivos-1].nombre == NULL)
             stdin_flag = TRUE;
-        /*
-        if(!stdin_flag){
-            if((param->archivo_entrada[cant_archivos - 1].stream = fopen(param->archivo_entrada[cant_archivos-1].nombre, "r")) == NULL){
-                destruir_params(param);
-                return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-            }
-            fclose(pf);
-        }
-        */
     }
 
     if (stdin_flag && (cant_archivos != 1 || param->archivo_entrada->formato == FMT_BIN)){

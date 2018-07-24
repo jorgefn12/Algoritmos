@@ -1,11 +1,8 @@
 #ifndef ARGUMENTOS__H
-#define ARGUMETNOS__H
+#define ARGUMENTOS__H
 
 #include "tipos.h"
-#include "comun.h"
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define DEFAULT_MEMORIA 50
 #define DEFAULT_CANT_ARCHIVOS 1
