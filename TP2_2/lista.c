@@ -1,10 +1,10 @@
-/*Definiciones TDA Lista y sus primitivas*/
-#include "lista.h"
+#include "listas.h"
 #include "tipos.h"
-#include "comun.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+typedef struct nodo{
+    struct nodo * sig;
+    void * dato;
+} nodo_t, * lista_t; 
 
 status_t crear_lista(lista_t * lista){
     if(!lista)
@@ -61,29 +61,29 @@ void destruir_lista(lista_t * lista){
 }
 void imprimir_lista_int(lista_t lista){
     while(lista){
-        printf("%d ", (lista->dato));
+        fprintf(stdout,"%d ", (int)(lista->dato));
         lista = lista->sig;
     }
     putchar('\n');
 }
-bool_t guardar_lista_en_vector(lista_t lista, vector_t * vector){
-    vector_t * aux;
+bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector){
     size_t i;
+
     if(vector == NULL)
         return FALSE;
-    if((aux = crear_vector(1)) == NULL)
+    if((*vector = crear_vector(1)) == NULL)
         return FALSE;
-    *vector = *aux;
+    
     for(i = 1; lista != NULL; i++){
-
-        if(!vector_redimensionar(vector, i)){
-            vector_destruir(&vector);
+        
+        if(!vector_redimensionar(*vector, i)){
+            vector_destruir(vector);
             return FALSE;
         }
-        if(!vector_guardar_int(vector,i,lista->dato)){
-            vector_destruir(&vector);
+        if(!vector_guardar_int(*vector,i,(int*)&lista->dato)){
+            vector_destruir(vector);
             return FALSE;
-        }        
+        }
         lista = lista->sig;
     }
     return TRUE;
