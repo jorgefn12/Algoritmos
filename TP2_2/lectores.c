@@ -124,24 +124,22 @@ status_t cargar_lista_palabras_stdin(lista_t * lista, size_t * cant_palabras){
     size_t i = 0;
     
     fprintf(stdout, "%s\n", MSJ_BIENVENIDO_SIMPLETRON);
-    fprintf(stdout, "%02lu ? ", i);
-    fgets(buffer, MAX_STR, stdin);
     
     while (i < *cant_palabras) {
-        if (strcmp(buffer, STR_FIN_CARGA)) {
-            palabra = strtol(buffer, &pch, 10);
-            /*Verificaion de que la palabra cumpla requisitos.....*/
-            if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra))
-                return ST_ERROR_PALABRA_NO_VALIDA;
-            /*Lo guardo en la memoria*/
-            if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
-                return st;
-            i++;
-            fprintf(stdout, "%02lu ? ", i);
-            fgets(buffer, MAX_STR, stdin);
+    	fprintf(stdout, "%02lu ? ", i);
+    	fgets(buffer, MAX_STR, stdin);
+
+        palabra = strtol(buffer, &pch, 10);
+        if(palabra == NUMERO_FIN_CARGA)
+        	break;
+        /*Verificaion de que la palabra cumpla requisitos.....*/
+        if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra)){
+            return ST_ERROR_PALABRA_NO_VALIDA;
         }
-        else
-            break;
+        /*Lo guardo en la memoria*/
+        if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
+            return st;
+        i++;
     }
     return ST_OK;
 }
