@@ -23,7 +23,7 @@ int abrir_archivos(params_t * param){
     }
     if(param->archivo_entrada->nombre == NULL){
         param->archivo_entrada->stream = stdin;
-        return archivos_abiertos;
+        return ++archivos_abiertos;
     }
     for(i = 0; i < param->cant_archivos; i++){
         switch(param->archivo_entrada[i].formato){
