@@ -26,6 +26,7 @@ typedef enum{
     /*carga de archivo*/
     ST_ERROR_PALABRA_NO_VALIDA,
     ST_ERROR_LEER_PALABRA,
+    ST_MEMORIA_INSUFICIENTE,
     /*status de ejecutar_codigo*/
     ST_HALT,
     ST_ERROR_SEGMENTATION_FAULT,
@@ -105,6 +106,7 @@ void destruir_params(params_t * param);
 /*carga*/
 #define MSJ_ST_ERROR_LEER_PALABRA "Ocurrio un error al leer palabra del archivo"
 #define MSJ_ST_ERROR_PALABRA_NO_VALIDA "La palabra ingresada no es valida"
+#define MSJ_ST_MEMORIA_INSUFICIENTE "Se superó la memoria solicitada para el simpletron"
 /*ejecucion*/
 #define MSJ_ST_ERROR_SEGMENTATION_FAULT "Se intentó acceder a un área restringida de memoria"
 #define MSJ_ST_ERROR_OPCODE_INVALIDO "Se trató de ejecutar una instrucción no especificada en el lenguaje"
@@ -186,10 +188,10 @@ status_t lms_halt(simpletron_t * simpletron, vector_t * memoria);
 #define DELIMITADOR_COMENTARIO ";"
 int abrir_archivos(params_t * param);
 int cerrar_archivos(params_t * param);
-status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista);
-status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista);
-status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista);
-status_t cargar_lista_palabras_stdin(lista_t * lista);
+status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t * cant_palabras);
+status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista, size_t * cant_palabras);
+status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista, size_t * cant_palabras);
+status_t cargar_lista_palabras_stdin(lista_t * lista, size_t * cant_palabras);
 int get_opcode_bin(int palabra);
 uint get_operando_bin(int palabra);
 /**********************************************************************************************/
@@ -225,6 +227,7 @@ int main(int argc, char** argv){
     lista_t lista;
     size_t i;
     vector_t * v;
+    size_t total_palabras = 0;
     
     validacion_cla(argc, argv, &argumentos);
     if(st == ST_OK){
@@ -243,7 +246,7 @@ int main(int argc, char** argv){
     
     for(i = 0; i < argumentos.cant_archivos; i++){
         crear_lista(&lista);
-        cargar_lista_palabras(argumentos.archivo_entrada[i], &lista);
+        cargar_lista_palabras(argumentos.archivo_entrada[i], &lista, &argumentos.cant_memoria);
         puts("Imprimiendo lista");
         imprimir_lista_int(lista);
         guardar_lista_en_vector(lista, &simply->memoria[i]);
@@ -385,21 +388,21 @@ int cerrar_archivos(params_t * param){
 }
 /*La destruccion de las listas se realiza afuera de esta función, recibe una lista vacia*/
 /*Revisar optimizacion/correccion de funciones de carga*/
-status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista){
+status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t* cant_palabras){
     if(lista == NULL)
         return ST_ERROR_PTR_NULO;
     switch(archivo.formato){
         case FMT_TXT:
             if(archivo.nombre == NULL)
-                return cargar_lista_palabras_stdin(lista);
-            return cargar_lista_palabras_txt(archivo.stream, lista);
+                return cargar_lista_palabras_stdin(lista, cant_palabras);
+            return cargar_lista_palabras_txt(archivo.stream, lista, cant_palabras);
         case FMT_BIN:
-            return cargar_lista_palabras_bin(archivo.stream, lista);
+            return cargar_lista_palabras_bin(archivo.stream, lista, cant_palabras);
         default:
             return ST_ERROR_FORMATO_ARCHIVO_INVALIDO;
     }
 }
-status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista){
+status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista, size_t * cant_palabras){
     char buffer[MAX_STR], *pch;
     int palabra;
     status_t st;
@@ -411,12 +414,15 @@ status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista){
             return ST_ERROR_PALABRA_NO_VALIDA;
         if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
             return st;
+        
+        if(--(*cant_palabras) < 0)
+            return ST_MEMORIA_INSUFICIENTE;
     }
     if(ferror(stream))
         return ST_ERROR_LEER_PALABRA;
     return ST_OK;
 }
-status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista){
+status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista, size_t * cant_palabras){
     uchar high_byte, low_byte;
     int palabra, opcode;
     uint operando;
@@ -434,12 +440,15 @@ status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista){
         palabra = opcode * OPCODE_OPERANDO_MULTIPLIER + (opcode >= 0 ? operando : -operando);
         if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
             return st;
+        
+        if(--(*cant_palabras) < 0)
+            return ST_MEMORIA_INSUFICIENTE;
     }
     if(ferror(stream))
         return ST_ERROR_LEER_PALABRA;
     return ST_OK;
 }
-status_t cargar_lista_palabras_stdin(lista_t * lista){
+status_t cargar_lista_palabras_stdin(lista_t * lista, size_t * cant_palabras){
     
 }
 int get_opcode_bin(int palabra){
@@ -715,6 +724,9 @@ void imprimir_estado(status_t status){
             break;
         case ST_ERROR_ARCHIVO_NO_ENCONTRADO:
             fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_ARCHIVO_NO_ENCONTRADO, MSJ_OPCION_AYUDA);
+            break;
+        case ST_MEMORIA_INSUFICIENTE:
+            fprintf(stderr, "%s. %s\n", MSJ_ST_MEMORIA_INSUFICIENTE, MSJ_OPCION_AYUDA);
             break;
             /*Mensajes de error de validaciones.c*/
         case ST_AYUDA:
