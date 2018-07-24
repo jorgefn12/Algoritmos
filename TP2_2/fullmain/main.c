@@ -3,10 +3,17 @@
 #include <string.h>
 /****************************COMUN.H********************************************************/
 #define MAX_STR 200
-typedef struct vector{
-    size_t usado, pedido;
-    void * datos;
-} vector_t; /********ENCAPSULAR*************/
+#define STR_FIN_CARGA "-99999999"
+#define MIN_PALABRA -640511  /*Maximo alcanzable en formato texto que puede abarcar el formato binario*/
+#define MAX_PALABRA 630511
+#define OPCODE_OPERANDO_MULTIPLIER 10000
+#define OPERANDO_MIN 0 /*xxxxxxx000000000*/
+#define OPERANDO_MAX 511 /*xxxxxxx111111111*/
+#define OPCODE_MIN 0 /*0000000xxxxxxxxx*/
+#define OPCODE_MAX 127 /*1111111xxxxxxxxx*/
+#define OPCODE_FIELD_MIN -64 /*1000000xxxxxxxxx*/
+#define OPCODE_FIELD_MAX 63 /*0111111xxxxxxxxx*/
+
 /****************************TIPOS.H********************************************************/
 typedef enum{
     FALSE = 0,
@@ -42,21 +49,8 @@ typedef struct archivo{
     formato_t formato;
     FILE * stream;
 }archivo_t;
-/****************************LISTAS.H********************************************************/
-typedef struct nodo{
-    struct nodo * sig;
-    void * dato;
-} nodo_t, * lista_t; /********ENCAPSULAR*************/
-status_t crear_lista(lista_t * lista);
-nodo_t * crear_nodo(void * dato);
-bool_t lista_esta_vacia(lista_t lista);
-status_t insertar_nodo_final(lista_t * lista, void * dato);
-status_t insertar_nodo_ppio(lista_t * lista, void * dato);
-void destruir_lista(lista_t * lista);
-void imprimir_lista_int(lista_t lista);
-bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector);
 /***************************************MEMORIA.H***********************************************/
-
+typedef struct vector vector_t;
 vector_t * crear_vector(size_t n);
 bool_t vector_redimensionar(vector_t *v, size_t n);
 void vector_destruir(vector_t ** v);
@@ -66,6 +60,16 @@ void imprimir_int(void* datos, void * stream);
 int obtener_dato(vector_t * v, size_t i);
 int obtener_usado(vector_t * v);
 int obtener_pedido(vector_t * v);
+/****************************LISTAS.H********************************************************/
+typedef struct nodo nodo_t, * lista_t;
+status_t crear_lista(lista_t * lista);
+nodo_t * crear_nodo(void * dato);
+bool_t lista_esta_vacia(lista_t lista);
+status_t insertar_nodo_final(lista_t * lista, void * dato);
+status_t insertar_nodo_ppio(lista_t * lista, void * dato);
+void destruir_lista(lista_t * lista);
+void imprimir_lista_int(lista_t lista);
+bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector);
 /*************************************ARGUMENTOS.H*****************************************************/
 #define DEFAULT_MEMORIA 50
 #define DEFAULT_CANT_ARCHIVOS 1
@@ -93,6 +97,10 @@ char * get_name_lmsfile(char* name);
 formato_t get_fmt_lmsfile(char* name);
 void destruir_params(params_t * param);
 /*********************************ERRORES.H****************************************************/
+#define MSJ_AYUDA_PROTOTIPO "Prototipo de ejecucion: .\\simpletron -m N -f FMT [Archivo1 Archivo2 Archivo3...]"
+#define MSJ_AYUDA_MEMORIA "MEMORIA:\n -m N:\t -m es el flag indicador de memoria y N debe ser un numero entero. No es obligatorio su ingreso. En caso de no ingresarse N sera 50"
+#define MSJ_AYUDA_FORMATO "FORMATO:\n-f FMT:\t -f es el flag indicador del formato de salida donde FMT debe ser TXT o BIN. No es obligatorio su ingreso. Por default sera TXT"
+#define MSJ_AYUDA_ARCHIVOS "ARCHIVOS:\n Los nombres de archivo de entrada deberan estar antecedidos por 't:' o 'b:' si el archivo debera leerse como un archivo de texto o un archivo binario respectivamente. En caso de omiterse esta especificacion, el archivo sera leido como un archivo de texto. En caso de que no se ingresen nombres de archivos, la entrada de datos sera por stdin"
 #define MSJ_OPCION_AYUDA "Ingrese: .\\simpletron -h o .\\simpletron --help para mas informacion."
 #define MSJ_ST_OK "La operación finalizó correctamente"
 #define MSJ_ST_AYUDA "Leer documentación. Escribir función para mensaje de ayuda"
@@ -113,22 +121,16 @@ void destruir_params(params_t * param);
 #define MSJ_ST_ERROR_OVERFLOW "Se trató de operar con un rango de números no soportados por la máquina"
 #define MSJ_ST_HALT "Finalizó la ejecución del archivo"
 void imprimir_estado(status_t status);
-void imprimir_ayuda(void); /***********ESCRIBIR FUNCION DE AYUDA**************************/
+void imprimir_ayuda(void);
 /********************************SIMPLETRON.H****************************************************/
+#define MSJ_BIENVENIDO_SIMPLETRON "*** ¡Bienvenido a la Simpletron!         ***\n*** Por favor, ingrese su programa una   ***\n*** instrucción (o dato) a la vez. Yo    ***\n*** escribiré la ubicacíón y un signo de ***\n*** pregunta (?). Luego usted ingrese la ***\n*** palabra para esa ubicación. Ingrese  ***\n*** -99999999 para finalizar:            ***"
 #define MSJ_COMIENZO_EJECUCION "******** INICIO DE EJECUCION DEL SIMPLETRON *******"
+#define MSJ_COMIENZO_ARCHIVO "Ejecutando un nuevo archivo"
+#define MSJ_FIN_ARCHIVO "Fin de ejecución del archivo"
 #define MSJ_FIN_EJECUCION "********* FIN DE EJECUCION DEL SIMPLETRON *********"
 #define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
 #define MSJ_IMPRIMIR_PALABRA "Contenido de la posición"
 
-#define MIN_PALABRA -640511  /*Maximo alcanzable en formato texto que puede abarcar el formato binario*/
-#define MAX_PALABRA 630511
-#define OPCODE_OPERANDO_MULTIPLIER 10000
-#define OPERANDO_MIN 0 /*xxxxxxx000000000*/
-#define OPERANDO_MAX 511 /*xxxxxxx111111111*/
-#define OPCODE_MIN 0 /*0000000xxxxxxxxx*/
-#define OPCODE_MAX 127 /*1111111xxxxxxxxx*/
-#define OPCODE_FIELD_MIN -64 /*1000000xxxxxxxxx*/
-#define OPCODE_FIELD_MAX 63 /*0111111xxxxxxxxx*/
 typedef int palabra_t;
 typedef unsigned int uint_t;
 typedef enum{
@@ -149,7 +151,7 @@ typedef enum{
     OP_DJNZ,
     OP_HALT
 }opcode_t;
-typedef struct simpletron{ /********ENCAPSULAR????*************/
+typedef struct simpletron{
     palabra_t instruccion, acumulador;
     opcode_t opcode;
     uint operando;
@@ -157,9 +159,8 @@ typedef struct simpletron{ /********ENCAPSULAR????*************/
     vector_t ** memoria; /*Se guarda una memororia por cada archivo*/
 }simpletron_t;
 typedef status_t (*pfx_lms)(simpletron_t *, vector_t *);
-simpletron_t * crear_simpletron(params_t * param);
-void destruir_simpletron(simpletron_t ** simpletron);
-void imprimir_registros_simpletron(simpletron_t * simpletron, FILE * stream);
+bool_t crear_simpletron(params_t * param, simpletron_t ** simpletron);
+void destruir_simpletron(simpletron_t ** simpletron, params_t * param);
 bool_t palabra_es_valida(palabra_t palabra);
 status_t ejecutar_codigo(simpletron_t * simpletron, params_t * param);
 status_t lms_leer(simpletron_t * simpletron, vector_t * memoria);
@@ -179,6 +180,7 @@ status_t lms_jnz(simpletron_t * simpletron, vector_t * memoria);
 status_t lms_djnz(simpletron_t * simpletron, vector_t * memoria);
 status_t lms_halt(simpletron_t * simpletron, vector_t * memoria);
 /*******************************LECTORES.H*****************************************************/
+
 #define MASK_OPERANDO 0x01FF
 #define MASK_OPCODE 0xFE00
 #define BYTE_SHIFT 8
@@ -192,148 +194,107 @@ status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t * cant
 status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista, size_t * cant_palabras);
 status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista, size_t * cant_palabras);
 status_t cargar_lista_palabras_stdin(lista_t * lista, size_t * cant_palabras);
-int get_opcode_bin(int palabra);
-uint get_operando_bin(int palabra);
+int get_opcode_bin(palabra_t palabra);
+uint get_operando_bin(palabra_t palabra);
+/*****************************DUMP.H**************************************************/
+#define DUMP_MSJ_REGISTROS "\nREGISTROS"
+#define DUMP_MSJ_ACUMULADOR "acumulador"
+#define DUMP_MSJ_PROGRAM_COUNTER "program counter"
+#define DUMP_MSJ_INSTRUCCION "instruccion"
+#define DUMP_MSJ_OPCODE "opcode"
+#define DUMP_MSJ_OPERANDO "operando"
+#define DUMP_MSJ_MEMORIA "\nMEMORIA"
+
+void imprimir_dump(simpletron_t * simpletron, vector_t * memoria, params_t * param);
+void imprimir_dump_txt(simpletron_t * simpletron, vector_t * memoria, FILE * stream);
+void imprimir_dump_bin(simpletron_t * simpletron, vector_t * memoria, FILE * stream);
 /**********************************************************************************************/
-
-void debug(){
-    static size_t i;
-    
-    printf("FUNCIONA %lu\n", i++);
+void destructor(params_t * param, simpletron_t ** simpletron){
+	cerrar_archivos(param);
+	destruir_simpletron(simpletron, param);
+	destruir_params(param);
 }
-int main(int argc, char** argv){
-    /*MAIN PARA TESTEAR OPCODES Y OPERANDOS
-    int palabra;
-    int opcode;
-    uint operando;
-    uchar high_byte = 1, low_byte = 1;
 
-    palabra = 0;
-    palabra = ((palabra | high_byte) << BYTE_SHIFT) | low_byte;
-    printf("palabra: %d\n",palabra);
-    
-    opcode = get_opcode_bin(palabra);
-    operando = get_operando_bin(palabra);
-    printf("opcode: %d\n",opcode);
-    printf("operando: %d\n",operando);
-    
-    palabra = opcode * OPCODE_OPERANDO_MULTIPLIER + (opcode >= 0 ? operando : -operando);
-    printf("palabra_final: %d\n",palabra);
-    */
-    /*MAIN PARA TESTEAR FUNCION DE ARGUMENTOS, APERTURA/CIERRE DE ARCHIVOS y SIMPLETRON*/
+int main(int argc, char** argv){
     simpletron_t * simply = NULL;
     status_t st;
     params_t argumentos;
     lista_t lista;
     size_t i;
-    vector_t * v;
-    size_t total_palabras = 0;
     
-    validacion_cla(argc, argv, &argumentos);
-    if(st == ST_OK){
-        for(i=0;i<argumentos.cant_archivos;i++){
-            printf("Archivo entrada %lu: %s [%d]\n", i+1, argumentos.archivo_entrada[i].nombre ? argumentos.archivo_entrada[i].nombre : "stdin(null)", argumentos.archivo_entrada[i].formato);
-        }
-        printf("Archivo salida: %s [%d]\n",argumentos.archivo_salida->nombre, argumentos.archivo_salida->formato);
-        printf("Cantidad memoria: %ld\n", argumentos.cant_memoria);
-        printf("Cantidad archivos entrada: %ld\n", argumentos.cant_archivos);
+    if((st = validacion_cla(argc, argv, &argumentos)) != ST_OK){
+    	imprimir_estado(st);
+    	return EXIT_FAILURE;
     }
-
-    simply = crear_simpletron(&argumentos);
-    imprimir_registros_simpletron(simply, stdout);
-
-    printf("Cantidad archivos abiertos: %lu\n", abrir_archivos(&argumentos));
-    
+    if(!crear_simpletron(&argumentos,&simply)){
+    	destructor(&argumentos, &simply);
+    	return EXIT_FAILURE;
+    }
+    if(abrir_archivos(&argumentos) != argumentos.cant_archivos + 1){
+    	fprintf(stderr, "%s\n", MSJ_ST_ERROR_ARCHIVO_NO_ENCONTRADO);
+    	destructor(&argumentos, &simply);
+    	return EXIT_FAILURE;
+    }
     for(i = 0; i < argumentos.cant_archivos; i++){
         crear_lista(&lista);
-        cargar_lista_palabras(argumentos.archivo_entrada[i], &lista, &argumentos.cant_memoria);
-        puts("Imprimiendo lista");
-        imprimir_lista_int(lista);
-        guardar_lista_en_vector(lista, &simply->memoria[i]);
-        vector_iterar_int(simply->memoria[i],imprimir_int, stdout);
-        putchar('\n');
-    }
-    ejecutar_codigo(simply, &argumentos);
-    printf("Cantidad archivos cerrados: %lu\n", cerrar_archivos(&argumentos));
-    destruir_simpletron(&simply);
-    destruir_params(&argumentos);
-    
-    /*MAIN PARA TESTEAR LISTAS
-    lista_t lista;
-    int valores[] = {0,1,2,3,4,5,6,7,8,9};
-    crear_lista(&lista);
-    insertar_nodo_final(&lista, valores[1]);
-    insertar_nodo_final(&lista, valores[2]);
-    insertar_nodo_final(&lista, valores[3]);
-    insertar_nodo_final(&lista, valores[5]);
-    insertar_nodo_final(&lista, valores[9]);
-    insertar_nodo_ppio(&lista, valores[0]);
-    imprimir_lista_int(lista);
-    
-    destruir_lista(&lista);
-    */
-    /*MAIN PARA TESTEAR VECTORES
-    vector_t * v;
-    params_t argumentos;
-    status_t st;
-    lista_t lista, * header;
-    size_t i, j;
-    
-    header = &lista;
-    validacion_cla(argc, argv, &argumentos);
-    if(st == ST_OK){
-        for(i=0;i<argumentos.cant_archivos;i++){
-            printf("Archivo entrada %lu: %s [%d]\n", i+1, argumentos.archivo_entrada[i].nombre ? argumentos.archivo_entrada[i].nombre : "stdin(null)", argumentos.archivo_entrada[i].formato);
+        if(cargar_lista_palabras(argumentos.archivo_entrada[i], &lista, &argumentos.cant_memoria) != ST_OK){
+        	destructor(&argumentos, &simply);
+        	return EXIT_FAILURE;
         }
-        printf("Archivo salida: %s [%d]\n",argumentos.archivo_salida->nombre, argumentos.archivo_salida->formato);
-        printf("Cantidad memoria: %ld\n", argumentos.cant_memoria);
-        printf("Cantidad archivos entrada: %ld\n", argumentos.cant_archivos);
-    }
-    printf("Cantidad archivos abiertos: %lu\n", abrir_archivos(&argumentos));
-    v = crear_vector(20);
-    for(i = 0; i < argumentos.cant_archivos; i++){
-        crear_lista(&lista);
-        cargar_lista_palabras(argumentos.archivo_entrada[i], &lista);
-        puts("Imprimiendo lista");
-        imprimir_lista_int(lista);
-        for(j = 0; (*header) != NULL; j++){
-            vector_guardar_int(v, j+1, (int*)&(*header)->dato);
-            (*header) = (*header)->sig;
+        if(!guardar_lista_en_vector(lista, &simply->memoria[i])){
+        	destructor(&argumentos, &simply);
+        	return EXIT_FAILURE;
         }
-
         destruir_lista(&lista);
     }
-    vector_iterar_int(v,imprimir_int, stdout);
-    printf("\nmemoria usada: %d\n", v->usado);
-    printf("memoria pedida: %d\n", v->pedido);
-    vector_destruir(&v);
-    */
-    /*VECTORES BASICO
-    vector_t * v;
-    int valores[] = {0,1,2,3,4,5,6,7,8,9};
-    
-    v = crear_vector(20);
-    vector_redimensionar(v, 100);
-    vector_guardar_int(v, 5, &valores[4]);
-    
-    vector_redimensionar(v, 150);
-    vector_redimensionar(v, 10);
-    vector_redimensionar(v, 100);
-    vector_redimensionar(v, 60);
-    vector_redimensionar(v, 15);
-    
-    printf("%d\n", obtener_dato(v, 5));
-    printf("%d\n", obtener_usado(v));
-    printf("%d\n", obtener_pedido(v));
+    if(ejecutar_codigo(simply, &argumentos) != ST_OK){
+    	destructor(&argumentos, &simply);
+    	return EXIT_FAILURE;
+    }
 
-    vector_iterar_int(v,imprimir_int, stdout);
-    printf("\nmemoria usada: %d\n", v->usado);
-    printf("memoria pedida: %d\n", v->pedido);
-    vector_destruir(&v);
-    */
+    cerrar_archivos(&argumentos);
+    destruir_simpletron(&simply, &argumentos);
+    destruir_params(&argumentos);
+    
     return EXIT_SUCCESS;
 }
-
+/*****************************DUMP.C********************************************************/
+void imprimir_dump(simpletron_t * simpletron, vector_t * memoria, params_t * param){
+    switch(param->archivo_salida->formato){
+        case FMT_TXT:
+            imprimir_dump_txt(simpletron, memoria, param->archivo_salida->stream);
+        case FMT_BIN:
+            imprimir_dump_bin(simpletron, memoria, param->archivo_salida->stream);
+    }
+}
+void imprimir_dump_txt(simpletron_t * simpletron, vector_t * memoria, FILE * stream){
+    size_t i,j;
+    
+    fprintf(stream, "\n%s:\n", DUMP_MSJ_REGISTROS);
+    fprintf(stream, "%15s:   %5X\n", DUMP_MSJ_ACUMULADOR, simpletron->acumulador);
+    fprintf(stream, "%15s:       %01ld\n", DUMP_MSJ_PROGRAM_COUNTER, simpletron->program_counter);
+    fprintf(stream, "%15s: %+5d\n", DUMP_MSJ_INSTRUCCION, simpletron->instruccion);
+    fprintf(stream, "%15s:   %5d\n", DUMP_MSJ_OPCODE, simpletron->opcode);
+    fprintf(stream, "%15s:     %03d\n", DUMP_MSJ_OPERANDO, simpletron->operando);
+    fprintf(stream, "%s:\n", DUMP_MSJ_MEMORIA);
+    
+    for (i = 0, j = 0; i < obtener_pedido(memoria); i++){
+        if (!(i % 10))
+            fprintf(stream, "\n%3ld:", j++ * 10);
+        
+        fprintf(stream, " %05X", obtener_dato(memoria, i + 1));
+    }
+    putchar('\n');
+}
+void imprimir_dump_bin(simpletron_t * simpletron, vector_t * memoria, FILE * stream){
+    size_t i;
+    palabra_t palabra;
+    
+    for (i = 0; i < obtener_pedido(memoria); i++){
+        palabra = obtener_dato(memoria,i+1);
+        fwrite(&palabra,sizeof(int),1,stream);
+    }
+}
 /*****************************LECTORES.C********************************************************/
 int abrir_archivos(params_t * param){
     size_t archivos_abiertos = 0;
@@ -388,7 +349,7 @@ int cerrar_archivos(params_t * param){
 }
 /*La destruccion de las listas se realiza afuera de esta función, recibe una lista vacia*/
 /*Revisar optimizacion/correccion de funciones de carga*/
-status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t* cant_palabras){
+status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t * cant_palabras){
     if(lista == NULL)
         return ST_ERROR_PTR_NULO;
     switch(archivo.formato){
@@ -404,18 +365,17 @@ status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t* cant_
 }
 status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista, size_t * cant_palabras){
     char buffer[MAX_STR], *pch;
-    int palabra;
+    palabra_t palabra;
     status_t st;
 
     while((fgets(buffer, MAX_STR, stream)) != NULL){
         pch = strtok(buffer, DELIMITADOR_COMENTARIO);
         palabra = strtol(buffer, &pch, 10);
-        if(!palabra_es_valida(palabra))
+        if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra))
             return ST_ERROR_PALABRA_NO_VALIDA;
         if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
             return st;
-        
-        if(--(*cant_palabras) < 0)
+        if(!--(*cant_palabras))
             return ST_MEMORIA_INSUFICIENTE;
     }
     if(ferror(stream))
@@ -424,7 +384,7 @@ status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista, size_t * cant
 }
 status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista, size_t * cant_palabras){
     uchar high_byte, low_byte;
-    int palabra, opcode;
+    palabra_t palabra, opcode;
     uint operando;
     status_t st;
     while((fread(&high_byte,1,1,stream) == 1)){
@@ -441,7 +401,7 @@ status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista, size_t * cant
         if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
             return st;
         
-        if(--(*cant_palabras) < 0)
+        if(!--(*cant_palabras))
             return ST_MEMORIA_INSUFICIENTE;
     }
     if(ferror(stream))
@@ -449,12 +409,37 @@ status_t cargar_lista_palabras_bin(FILE * stream, lista_t * lista, size_t * cant
     return ST_OK;
 }
 status_t cargar_lista_palabras_stdin(lista_t * lista, size_t * cant_palabras){
+    char buffer[MAX_STR], *pch;
+    palabra_t palabra;
+    status_t st;
+    size_t i = 0;
     
+    fprintf(stdout, "%s\n", MSJ_BIENVENIDO_SIMPLETRON);
+    fprintf(stdout, "%02lu ? ", i);
+    fgets(buffer, MAX_STR, stdin);
+    
+    while (i < *cant_palabras) {
+        if (strcmp(buffer, STR_FIN_CARGA)) {
+            palabra = strtol(buffer, &pch, 10);
+            /*Verificaion de que la palabra cumpla requisitos.....*/
+            if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra))
+                return ST_ERROR_PALABRA_NO_VALIDA;
+            /*Lo guardo en la memoria*/
+            if((st = insertar_nodo_final(lista, (void*)palabra)) != ST_OK)
+                return st;
+            i++;
+            fprintf(stdout, "%02lu ? ", i);
+            fgets(buffer, MAX_STR, stdin);
+        }
+        else
+            break;
+    }
+    return ST_OK;
 }
-int get_opcode_bin(int palabra){
+int get_opcode_bin(palabra_t palabra){
     return palabra & MASK_MSB ? -((((~palabra) & MASK_OPCODE) >> OPCODE_SHIFT) +1) : palabra >> OPCODE_SHIFT;
 }
-uint get_operando_bin(int palabra){
+uint get_operando_bin(palabra_t palabra){
     return palabra & MASK_OPERANDO;
 }
 /******************************SIMPLETRON.C********************************************************/
@@ -494,21 +479,27 @@ palabra_t opcode_validos[] = {
     OP_DJNZ,
     OP_HALT
 };
-simpletron_t * crear_simpletron(params_t * param){
-    simpletron_t * simpletron = NULL;
+
+bool_t crear_simpletron(params_t * param, simpletron_t ** simpletron){
     if(param == NULL)
-        return NULL;
-    if((simpletron = (simpletron_t *)calloc(1, sizeof(simpletron_t))) == NULL)
-        return NULL;
-    if((simpletron->memoria = (vector_t **)calloc(1, sizeof(vector_t*) * param->cant_archivos)) == NULL){
-        destruir_simpletron(&simpletron);
-        return NULL;
+        return FALSE;
+    if((*simpletron = (simpletron_t *)calloc(1, sizeof(simpletron_t))) == NULL)
+        return FALSE;
+    if(((*simpletron)->memoria = (vector_t **)calloc(1, sizeof(vector_t*) * param->cant_archivos)) == NULL){
+        destruir_simpletron(simpletron, param);
+        return FALSE;
     }
-    return simpletron;
+    return TRUE;
 }
-void destruir_simpletron(simpletron_t ** simpletron){
+
+void destruir_simpletron(simpletron_t ** simpletron, params_t * param){
+	size_t i;
+
     if(simpletron && *simpletron){
         if((*simpletron)->memoria){
+            for(i = 0; i < param->cant_archivos; i++){
+            	vector_destruir(&((*simpletron)->memoria[i]));
+            }
             free((*simpletron)->memoria);
             (*simpletron)->memoria = NULL;
         }
@@ -516,18 +507,7 @@ void destruir_simpletron(simpletron_t ** simpletron){
         *simpletron = NULL;
     }
 }
-void imprimir_registros_simpletron(simpletron_t * simpletron, FILE * stream){
-    puts("Imprimiendo registros:");
-    if(simpletron == NULL){
-        puts("NULL");
-        return;
-    }
-    fprintf(stream, "acumulador: %d\n",simpletron->acumulador);
-    fprintf(stream, "instruccion: %d\n",simpletron->instruccion);
-    fprintf(stream, "opcode: %d\n",simpletron->opcode);
-    fprintf(stream, "operando: %d\n",simpletron->operando);
-    fprintf(stream, "program_counter: %lu\n",simpletron->program_counter);
-}
+
 bool_t palabra_es_valida(palabra_t palabra){
     int operando, opcode;
     
@@ -546,16 +526,15 @@ bool_t palabra_es_valida(palabra_t palabra){
 }
 status_t ejecutar_codigo(simpletron_t * simpletron, params_t * param){
     size_t i,j;
-    int memoria_usada, memoria_pedida, dato;
+    int memoria_pedida, dato;
     status_t status;
     pfx_lms operacion;
-    puts(MSJ_COMIENZO_EJECUCION);
+    fprintf(stdout, "%s\n", MSJ_COMIENZO_EJECUCION);
     for(i = 0; i < param->cant_archivos; i++){
-        puts("Comienza con los archivos");
-        memoria_usada = obtener_usado(simpletron->memoria[i]);
+    	fprintf(stdout, "%s\n", MSJ_COMIENZO_ARCHIVO);
+
         memoria_pedida = obtener_pedido(simpletron->memoria[i]);
-        printf("\nMemoria usada: %d\n", memoria_usada);
-        printf("Memoria pedida: %d\n", memoria_pedida);
+
         for(simpletron->program_counter = 0, simpletron->acumulador = 0; simpletron->program_counter < memoria_pedida; simpletron->program_counter++){
             /*Obtengo opcode y operandos*/
             dato = obtener_dato(simpletron->memoria[i], simpletron->program_counter + 1);
@@ -587,10 +566,12 @@ status_t ejecutar_codigo(simpletron_t * simpletron, params_t * param){
                 break;
             }
         }
-        puts("Fin de ejecución del archivo");
+        fprintf(stdout, "%s\n", MSJ_FIN_ARCHIVO);
+        
+        imprimir_dump(simpletron, simpletron->memoria[i], param);
+        
     }
-    puts("Fin de ejecucion de todos los archivos");
-    puts(MSJ_FIN_EJECUCION);
+    fprintf(stdout, "%s\n", MSJ_FIN_EJECUCION);
 
     return ST_OK;
 }
@@ -611,17 +592,11 @@ status_t lms_leer(simpletron_t * simpletron, vector_t * memoria){
     }
     
     vector_guardar_int(memoria, simpletron->operando + 1, (int*)&temp);
-    
-    /*
-    ((int*)memoria->datos)[simpletron->operando] = temp;
-    */
+
     return ST_OK;
 }
 status_t lms_escribir(simpletron_t * simpletron, vector_t * memoria){
     fprintf(stdout,"%s %i: %i\n",MSJ_IMPRIMIR_PALABRA,simpletron->operando,obtener_dato(memoria, simpletron->operando + 1));
-    /*
-    fprintf(stdout,"%s %i: %i\n",MSJ_IMPRIMIR_PALABRA,simpletron->operando,((int*)memoria->datos)[simpletron->operando]);
-    */
     return ST_OK;
 }   
 status_t lms_cargar(simpletron_t * simpletron, vector_t * memoria){
@@ -634,31 +609,27 @@ status_t lms_guardar(simpletron_t * simpletron, vector_t * memoria){
         return ST_ERROR_PALABRA_NO_VALIDA;
     }
     vector_guardar_int(memoria, simpletron->operando + 1, (int*)&simpletron->acumulador);
-    /*
-    ((int*)memoria->datos)[simpletron->operando] = simpletron->acumulador;
-    */
     return ST_OK;
 }
+int obtener_dato(vector_t * v, size_t i);
+int obtener_usado(vector_t * v);
+int obtener_pedido(vector_t * v);
 status_t lms_pcargar(simpletron_t * simpletron, vector_t * memoria){
-    if(((int*)memoria->datos)[simpletron->operando] > memoria->pedido + 1 || ((int*)memoria->datos)[simpletron->operando] < 0){
+    if(obtener_dato(memoria, simpletron->operando + 1) > obtener_pedido(memoria) + 1 || obtener_dato(memoria, simpletron->operando + 1) < 0){
         fprintf(stdout,"%s\n",MSJ_ST_ERROR_SEGMENTATION_FAULT);
         return ST_ERROR_SEGMENTATION_FAULT;
     }
     simpletron->acumulador = obtener_dato(memoria, obtener_dato(memoria, simpletron->operando + 1));
-    /*
-    simpletron->acumulador = ((int*)memoria->datos)[((int*)memoria->datos)[simpletron->operando]];
-    */
+
     return ST_OK;
 }
 status_t lms_pguardar(simpletron_t * simpletron, vector_t * memoria){
-    if(((int*)memoria->datos)[simpletron->operando] > memoria->pedido + 1 || ((int*)memoria->datos)[simpletron->operando] < 0){
+    if(obtener_dato(memoria, simpletron->operando + 1) > obtener_pedido(memoria) + 1 || obtener_dato(memoria, simpletron->operando + 1) < 0){
         fprintf(stdout,"%s\n",MSJ_ST_ERROR_SEGMENTATION_FAULT);
         return ST_ERROR_SEGMENTATION_FAULT;
     }
     vector_guardar_int(memoria, obtener_dato(memoria, simpletron->operando + 1), (int*)&simpletron->acumulador);
-    /*
-    ((int*)memoria->datos)[((int*)memoria->datos)[simpletron->operando]] = simpletron->acumulador;
-    */
+
     return ST_OK;
 }
 status_t lms_sumar(simpletron_t * simpletron, vector_t * memoria){
@@ -759,7 +730,10 @@ void imprimir_estado(status_t status){
     }
 }
 void imprimir_ayuda(void){
-    fprintf(stdout, "%s", MSJ_ST_AYUDA);
+    fprintf(stdout,"%s\n",MSJ_AYUDA_PROTOTIPO);
+    fprintf(stdout,"%s\n\n",MSJ_AYUDA_MEMORIA);
+    fprintf(stdout,"%s\n\n",MSJ_AYUDA_FORMATO);
+    fprintf(stdout,"%s\n\n",MSJ_AYUDA_ARCHIVOS);
 }
 /*****************************ARGUMENTOS.C********************************************************/
 status_t validacion_cla(int argc, char** argv, params_t *param) {
@@ -797,7 +771,7 @@ status_t validacion_cla(int argc, char** argv, params_t *param) {
         return ST_OK;
     /*---------------------------------AYUDA---------------------------------*/
     /*Forma de ejecutar: ./simpletron -h o --help */
-    if (argc == 2 && !strcmp(argv[i], FLAG_CLA_AYUDA_CORTO) || !strcmp(argv[i], FLAG_CLA_AYUDA_LARGO)){
+    if (argc == 2 && (!strcmp(argv[i], FLAG_CLA_AYUDA_CORTO) || !strcmp(argv[i], FLAG_CLA_AYUDA_LARGO))){
         destruir_params(param);
         return ST_AYUDA;
     }
@@ -854,15 +828,6 @@ status_t validacion_cla(int argc, char** argv, params_t *param) {
         
         if(!stdin_flag && param->archivo_entrada[cant_archivos-1].nombre == NULL)
             stdin_flag = TRUE;
-        /*
-        if(!stdin_flag){
-            if((param->archivo_entrada[cant_archivos - 1].stream = fopen(param->archivo_entrada[cant_archivos-1].nombre, "r")) == NULL){
-                destruir_params(param);
-                return ST_ERROR_ARCHIVO_NO_ENCONTRADO;
-            }
-            fclose(pf);
-        }
-        */
     }
 
     if (stdin_flag && (cant_archivos != 1 || param->archivo_entrada->formato == FMT_BIN)){
@@ -892,6 +857,10 @@ void destruir_params(params_t * param){
     param->archivo_salida = NULL;
 }
 /*****************************LISTAS.C********************************************************/
+typedef struct nodo{
+    struct nodo * sig;
+    void * dato;
+} nodo_t, * lista_t; 
 
 status_t crear_lista(lista_t * lista){
     if(!lista)
@@ -948,7 +917,7 @@ void destruir_lista(lista_t * lista){
 }
 void imprimir_lista_int(lista_t lista){
     while(lista){
-        printf("%d ", (lista->dato));
+        fprintf(stdout,"%d ", (int)(lista->dato));
         lista = lista->sig;
     }
     putchar('\n');
@@ -976,6 +945,10 @@ bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector){
     return TRUE;
 }
 /*****************************MEMORIA.C********************************************************/
+typedef struct vector{
+    size_t usado, pedido;
+    void * datos;
+} vector_t;
 /*Crea vector de 1 dimension*/
 vector_t * crear_vector(size_t n){
     vector_t * v;
@@ -998,18 +971,26 @@ vector_t * crear_vector(size_t n){
 *  Rellena la memoria solicitada que no está en uso con ceros.*/
 bool_t vector_redimensionar(vector_t *v, size_t n){
     void * aux;
-    size_t i;
     
     if(!v || n <= 0)
         return FALSE;
     
     if(n == v->pedido)
         return TRUE;
-    
+
     aux = (void*)calloc(1, n * sizeof(void*));
     if(!aux)
         return FALSE;
-    v->datos = memcpy(aux, v->datos, n > v->usado ? (v->usado) * sizeof(void*) : (n) * sizeof(void*));
+    memcpy(aux, v->datos, n > v->usado ? (v->usado) * sizeof(void*) : (n) * sizeof(void*));
+    free(v->datos);
+    v->datos = (void*)calloc(1, n * sizeof(void*));
+    if(!v->datos){
+    	free(aux);
+        return FALSE;
+    }
+    memcpy(v->datos, aux, n > v->usado ? (v->usado) * sizeof(void*) : (n) * sizeof(void*));
+    free(aux);
+
     v->pedido = n;
     if(v->usado > v->pedido)
         v->usado = v->pedido;
@@ -1034,11 +1015,7 @@ bool_t vector_guardar_int(vector_t * v, size_t i, int * dato){
     ((int*)v->datos)[i-1]= *dato;
     if(v->usado < i)
         v->usado = i;
-    /*
-    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[0]);
-    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[1]);
-    printf("GUARDADO 2: %d\n",((int*)(v)->datos)[2]);
-    */
+
     return TRUE;
 }
 /*No se puede iterar genericamente elementos que apunten a void*
