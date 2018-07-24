@@ -1,5 +1,3 @@
-/*La función cargar_vector(), todavia no funciona. Tengo que arreglar la función vector_redimensionar(*vector, i) antes. */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,26 +17,20 @@ typedef unsigned int uint;
 typedef enum{
     ST_OK,
     ST_AYUDA,
-    ST_ERROR_CANT_ARG,
     ST_ERROR_STDIN_INVALIDO,
     ST_ERROR_PTR_NULO,
     ST_ERROR_ARCHIVO_NO_ENCONTRADO,
     ST_ERROR_MEMORIA,
     ST_ERROR_MEMORIA_INGRESADA_INVALIDA,
     ST_ERROR_FORMATO_ARCHIVO_INVALIDO,
-    ST_ERROR_NODO_VACIO,
     /*carga de archivo*/
     ST_ERROR_PALABRA_NO_VALIDA,
     ST_ERROR_LEER_PALABRA,
-    ST_ERROR_CREAR_SIMPLETRON,
     /*status de ejecutar_codigo*/
     ST_HALT,
     ST_ERROR_SEGMENTATION_FAULT,
-    ST_ERROR_CAD_NO_LEIDA,
     ST_ERROR_OPCODE_INVALIDO,
-    ST_ERROR_MAX_INSTR_SUPERADO,
-    ST_ERROR_ESCRIBIR_BIN,
-    ST_ERROR_MAX_INGRESOS_SUPERADO
+    ST_ERROR_OVERFLOW
 }status_t;
 typedef enum{
     FMT_TXT,
@@ -70,6 +62,9 @@ void vector_destruir(vector_t ** v);
 bool_t vector_guardar_int(vector_t * v, size_t i, int * dato);
 void vector_iterar_int(vector_t * v, void (*func)(void *,void *), void * arg);
 void imprimir_int(void* datos, void * stream);
+int obtener_dato(vector_t * v, size_t i);
+int obtener_usado(vector_t * v);
+int obtener_pedido(vector_t * v);
 /*************************************ARGUMENTOS.H*****************************************************/
 #define DEFAULT_MEMORIA 50
 #define DEFAULT_CANT_ARCHIVOS 1
@@ -107,11 +102,24 @@ void destruir_params(params_t * param);
 #define MSJ_ST_ERROR_MEMORIA_INGRESADA_INVALIDA "La memoria ingresada no es valida, la misma debe ser un entero positivo"
 #define MSJ_ST_ERROR_FORMATO_ARCHIVO_INVALIDO "El formato de archivo de salida no es valido"
 #define MSJ_ST_ERROR_STDIN_INVALIDO "stdin no valido"
+/*carga*/
+#define MSJ_ST_ERROR_LEER_PALABRA "Ocurrio un error al leer palabra del archivo"
+#define MSJ_ST_ERROR_PALABRA_NO_VALIDA "La palabra ingresada no es valida"
+/*ejecucion*/
+#define MSJ_ST_ERROR_SEGMENTATION_FAULT "Se intentó acceder a un área restringida de memoria"
+#define MSJ_ST_ERROR_OPCODE_INVALIDO "Se trató de ejecutar una instrucción no especificada en el lenguaje"
+#define MSJ_ST_ERROR_OVERFLOW "Se trató de operar con un rango de números no soportados por la máquina"
+#define MSJ_ST_HALT "Finalizó la ejecución del archivo"
 void imprimir_estado(status_t status);
 void imprimir_ayuda(void); /***********ESCRIBIR FUNCION DE AYUDA**************************/
 /********************************SIMPLETRON.H****************************************************/
-#define MIN_PALABRA -9999999
-#define MAX_PALABRA 9999999
+#define MSJ_COMIENZO_EJECUCION "******** INICIO DE EJECUCION DEL SIMPLETRON *******"
+#define MSJ_FIN_EJECUCION "********* FIN DE EJECUCION DEL SIMPLETRON *********"
+#define MSJ_INGRESO_PALABRA "Ingrese una palabra: "
+#define MSJ_IMPRIMIR_PALABRA "Contenido de la posición"
+
+#define MIN_PALABRA -640511  /*Maximo alcanzable en formato texto que puede abarcar el formato binario*/
+#define MAX_PALABRA 630511
 #define OPCODE_OPERANDO_MULTIPLIER 10000
 #define OPERANDO_MIN 0 /*xxxxxxx000000000*/
 #define OPERANDO_MAX 511 /*xxxxxxx111111111*/
@@ -146,10 +154,28 @@ typedef struct simpletron{ /********ENCAPSULAR????*************/
     size_t program_counter;
     vector_t ** memoria; /*Se guarda una memororia por cada archivo*/
 }simpletron_t;
+typedef status_t (*pfx_lms)(simpletron_t *, vector_t *);
 simpletron_t * crear_simpletron(params_t * param);
 void destruir_simpletron(simpletron_t ** simpletron);
 void imprimir_registros_simpletron(simpletron_t * simpletron, FILE * stream);
 bool_t palabra_es_valida(palabra_t palabra);
+status_t ejecutar_codigo(simpletron_t * simpletron, params_t * param);
+status_t lms_leer(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_escribir(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_cargar(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_guardar(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_pcargar(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_pguardar(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_sumar(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_restar(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_dividir(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_multiplicar(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_jmp(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_jmpneg(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_jmpzero(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_jnz(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_djnz(simpletron_t * simpletron, vector_t * memoria);
+status_t lms_halt(simpletron_t * simpletron, vector_t * memoria);
 /*******************************LECTORES.H*****************************************************/
 #define MASK_OPERANDO 0x01FF
 #define MASK_OPCODE 0xFE00
@@ -167,6 +193,7 @@ status_t cargar_lista_palabras_stdin(lista_t * lista);
 int get_opcode_bin(int palabra);
 uint get_operando_bin(int palabra);
 /**********************************************************************************************/
+
 void debug(){
     static size_t i;
     
@@ -208,7 +235,7 @@ int main(int argc, char** argv){
         printf("Cantidad memoria: %ld\n", argumentos.cant_memoria);
         printf("Cantidad archivos entrada: %ld\n", argumentos.cant_archivos);
     }
-    
+
     simply = crear_simpletron(&argumentos);
     imprimir_registros_simpletron(simply, stdout);
 
@@ -223,6 +250,7 @@ int main(int argc, char** argv){
         vector_iterar_int(simply->memoria[i],imprimir_int, stdout);
         putchar('\n');
     }
+    ejecutar_codigo(simply, &argumentos);
     printf("Cantidad archivos cerrados: %lu\n", cerrar_archivos(&argumentos));
     destruir_simpletron(&simply);
     destruir_params(&argumentos);
@@ -283,10 +311,18 @@ int main(int argc, char** argv){
     
     v = crear_vector(20);
     vector_redimensionar(v, 100);
-    vector_guardar_int(v, 5, &valores[5]);
+    vector_guardar_int(v, 5, &valores[4]);
     
-    vector_redimensionar(v, 99);
+    vector_redimensionar(v, 150);
+    vector_redimensionar(v, 10);
+    vector_redimensionar(v, 100);
+    vector_redimensionar(v, 60);
+    vector_redimensionar(v, 15);
     
+    printf("%d\n", obtener_dato(v, 5));
+    printf("%d\n", obtener_usado(v));
+    printf("%d\n", obtener_pedido(v));
+
     vector_iterar_int(v,imprimir_int, stdout);
     printf("\nmemoria usada: %d\n", v->usado);
     printf("memoria pedida: %d\n", v->pedido);
@@ -367,7 +403,6 @@ status_t cargar_lista_palabras_txt(FILE * stream, lista_t * lista){
     char buffer[MAX_STR], *pch;
     int palabra;
     status_t st;
-    int datos[] = {0,1,2,3,4,5,6,7,8,9};
 
     while((fgets(buffer, MAX_STR, stream)) != NULL){
         pch = strtok(buffer, DELIMITADOR_COMENTARIO);
@@ -414,6 +449,42 @@ uint get_operando_bin(int palabra){
     return palabra & MASK_OPERANDO;
 }
 /******************************SIMPLETRON.C********************************************************/
+pfx_lms instrucciones[] = {
+    &lms_leer,
+    &lms_escribir,
+    &lms_cargar,
+    &lms_guardar,
+    &lms_pcargar,
+    &lms_pguardar,
+    &lms_sumar,
+    &lms_restar,
+    &lms_dividir,
+    &lms_multiplicar,
+    &lms_jmp,
+    &lms_jmpneg,
+    &lms_jmpzero,
+    &lms_jnz,
+    &lms_djnz,
+    &lms_halt
+};
+palabra_t opcode_validos[] = {
+    OP_LEER,
+    OP_ESCRIBIR,
+    OP_CARGAR,
+    OP_GUARDAR,
+    OP_PCARGAR,
+    OP_PGUARDAR,
+    OP_SUMAR,
+    OP_RESTAR,
+    OP_DIVIDIR,
+    OP_MULTIPLICAR,
+    OP_JMP,
+    OP_JMPNEG,
+    OP_JMPZERO,
+    OP_JNZ,
+    OP_DJNZ,
+    OP_HALT
+};
 simpletron_t * crear_simpletron(params_t * param){
     simpletron_t * simpletron = NULL;
     if(param == NULL)
@@ -464,6 +535,172 @@ bool_t palabra_es_valida(palabra_t palabra){
 
     return TRUE;
 }
+status_t ejecutar_codigo(simpletron_t * simpletron, params_t * param){
+    size_t i,j;
+    int memoria_usada, memoria_pedida, dato;
+    status_t status;
+    pfx_lms operacion;
+    puts(MSJ_COMIENZO_EJECUCION);
+    for(i = 0; i < param->cant_archivos; i++){
+        puts("Comienza con los archivos");
+        memoria_usada = obtener_usado(simpletron->memoria[i]);
+        memoria_pedida = obtener_pedido(simpletron->memoria[i]);
+        printf("\nMemoria usada: %d\n", memoria_usada);
+        printf("Memoria pedida: %d\n", memoria_pedida);
+        for(simpletron->program_counter = 0, simpletron->acumulador = 0; simpletron->program_counter < memoria_pedida; simpletron->program_counter++){
+            /*Obtengo opcode y operandos*/
+            dato = obtener_dato(simpletron->memoria[i], simpletron->program_counter + 1);
+            simpletron->opcode = dato / OPCODE_OPERANDO_MULTIPLIER;
+            simpletron->operando = dato % OPCODE_OPERANDO_MULTIPLIER;
+            simpletron->instruccion = simpletron->opcode * OPCODE_OPERANDO_MULTIPLIER + simpletron->operando;
+            /*Valida que operando pueda ser accdedido*/
+            if(simpletron->operando > memoria_pedida - 1 || simpletron->operando < 0){
+                fprintf(stdout,"%s\n",MSJ_ST_ERROR_SEGMENTATION_FAULT);
+                fprintf(stdout,"%s\n",MSJ_FIN_EJECUCION);
+                return ST_ERROR_SEGMENTATION_FAULT;
+            }
+            /*Valido que los opcode sean validos*/
+            for(j = 0; simpletron->opcode != opcode_validos[j]; j++){
+                if((j+1) == sizeof(opcode_validos)/sizeof(int)){
+                    fprintf(stdout,"%s\n",MSJ_ST_ERROR_OPCODE_INVALIDO);
+                    fprintf(stdout,"%s\n",MSJ_FIN_EJECUCION);
+                    return ST_ERROR_OPCODE_INVALIDO;
+                }
+            }
+            /*Ejecuta opcde*/
+            operacion = instrucciones[j];
+            status = (*operacion)(simpletron, simpletron->memoria[i]);
+            if (status != ST_OK){
+                if(status != ST_HALT){
+                    fprintf(stdout,"%s\n", MSJ_FIN_EJECUCION);
+                    return status;
+                }
+                break;
+            }
+        }
+        puts("Fin de ejecución del archivo");
+    }
+    puts("Fin de ejecucion de todos los archivos");
+    puts(MSJ_FIN_EJECUCION);
+
+    return ST_OK;
+}
+
+status_t lms_leer(simpletron_t * simpletron, vector_t * memoria){
+    char buffer[MAX_STR];
+    long temp;
+    char * pch;
+    
+    fprintf(stdout,"%s ",MSJ_INGRESO_PALABRA);
+    if(fgets(buffer, MAX_STR, stdin) == NULL){
+        fprintf(stdout, "%s\n", MSJ_ST_ERROR_LEER_PALABRA);
+        return ST_ERROR_LEER_PALABRA;
+    }
+    if((temp = strtol(buffer, &pch, 10)) > MAX_PALABRA || temp < MIN_PALABRA || (*pch != '\n' && *pch != '\0' && *pch != EOF)){
+        fprintf(stdout, "%s\n", MSJ_ST_ERROR_PALABRA_NO_VALIDA);
+        return ST_ERROR_PALABRA_NO_VALIDA;
+    }
+    
+    vector_guardar_int(memoria, simpletron->operando + 1, (int*)&temp);
+    
+    /*
+    ((int*)memoria->datos)[simpletron->operando] = temp;
+    */
+    return ST_OK;
+}
+status_t lms_escribir(simpletron_t * simpletron, vector_t * memoria){
+    fprintf(stdout,"%s %i: %i\n",MSJ_IMPRIMIR_PALABRA,simpletron->operando,obtener_dato(memoria, simpletron->operando + 1));
+    /*
+    fprintf(stdout,"%s %i: %i\n",MSJ_IMPRIMIR_PALABRA,simpletron->operando,((int*)memoria->datos)[simpletron->operando]);
+    */
+    return ST_OK;
+}   
+status_t lms_cargar(simpletron_t * simpletron, vector_t * memoria){
+    simpletron->acumulador = obtener_dato(memoria, simpletron->operando + 1);
+    return ST_OK;
+}
+status_t lms_guardar(simpletron_t * simpletron, vector_t * memoria){
+    if(simpletron->acumulador < MIN_PALABRA || simpletron->acumulador > MAX_PALABRA){
+        fprintf(stdout,"%s\n", MSJ_ST_ERROR_PALABRA_NO_VALIDA);
+        return ST_ERROR_PALABRA_NO_VALIDA;
+    }
+    vector_guardar_int(memoria, simpletron->operando + 1, (int*)&simpletron->acumulador);
+    /*
+    ((int*)memoria->datos)[simpletron->operando] = simpletron->acumulador;
+    */
+    return ST_OK;
+}
+status_t lms_pcargar(simpletron_t * simpletron, vector_t * memoria){
+    if(((int*)memoria->datos)[simpletron->operando] > memoria->pedido + 1 || ((int*)memoria->datos)[simpletron->operando] < 0){
+        fprintf(stdout,"%s\n",MSJ_ST_ERROR_SEGMENTATION_FAULT);
+        return ST_ERROR_SEGMENTATION_FAULT;
+    }
+    simpletron->acumulador = obtener_dato(memoria, obtener_dato(memoria, simpletron->operando + 1));
+    /*
+    simpletron->acumulador = ((int*)memoria->datos)[((int*)memoria->datos)[simpletron->operando]];
+    */
+    return ST_OK;
+}
+status_t lms_pguardar(simpletron_t * simpletron, vector_t * memoria){
+    if(((int*)memoria->datos)[simpletron->operando] > memoria->pedido + 1 || ((int*)memoria->datos)[simpletron->operando] < 0){
+        fprintf(stdout,"%s\n",MSJ_ST_ERROR_SEGMENTATION_FAULT);
+        return ST_ERROR_SEGMENTATION_FAULT;
+    }
+    vector_guardar_int(memoria, obtener_dato(memoria, simpletron->operando + 1), (int*)&simpletron->acumulador);
+    /*
+    ((int*)memoria->datos)[((int*)memoria->datos)[simpletron->operando]] = simpletron->acumulador;
+    */
+    return ST_OK;
+}
+status_t lms_sumar(simpletron_t * simpletron, vector_t * memoria){
+    palabra_t resultado;
+    if((resultado = simpletron->acumulador + obtener_dato(memoria, simpletron->operando + 1)) > MAX_PALABRA || resultado < MIN_PALABRA){
+        fprintf(stdout,MSJ_ST_ERROR_OVERFLOW);
+        return ST_ERROR_OVERFLOW;
+    }
+    simpletron->acumulador = resultado;
+    return ST_OK;
+}
+status_t lms_restar(simpletron_t * simpletron, vector_t * memoria){
+    simpletron->acumulador -= obtener_dato(memoria, simpletron->operando + 1);
+    return ST_OK;
+}
+status_t lms_dividir(simpletron_t * simpletron, vector_t * memoria){
+    simpletron->acumulador /= obtener_dato(memoria, simpletron->operando + 1);
+    return ST_OK;
+}
+status_t lms_multiplicar(simpletron_t * simpletron, vector_t * memoria){
+    simpletron->acumulador *= obtener_dato(memoria, simpletron->operando + 1);
+    return ST_OK;
+}
+status_t lms_jmp(simpletron_t * simpletron, vector_t * memoria){
+    simpletron->program_counter = simpletron->operando -1;
+    return ST_OK;
+}
+status_t lms_jmpneg(simpletron_t * simpletron, vector_t * memoria){
+    if(simpletron->acumulador < 0)
+        simpletron->program_counter = simpletron->operando -1;
+    return ST_OK;
+}
+status_t lms_jmpzero(simpletron_t * simpletron, vector_t * memoria){
+    if(!simpletron->acumulador)
+        simpletron->program_counter = simpletron->operando -1;
+    return ST_OK;
+}
+status_t lms_jnz(simpletron_t * simpletron, vector_t * memoria){
+    if(simpletron->acumulador)
+        simpletron->program_counter = simpletron->operando -1;
+    return ST_OK;
+}
+status_t lms_djnz(simpletron_t * simpletron, vector_t * memoria){
+    simpletron->acumulador--;
+    if(simpletron->acumulador)
+        simpletron->program_counter = simpletron->operando -1;
+    return ST_OK;
+}
+status_t lms_halt(simpletron_t * simpletron, vector_t * memoria){
+    return ST_HALT;
+}
 /*****************************ERRORES.C********************************************************/
 void imprimir_estado(status_t status){
     switch (status) {
@@ -492,26 +729,19 @@ void imprimir_estado(status_t status){
         case ST_ERROR_STDIN_INVALIDO:
             fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_STDIN_INVALIDO, MSJ_OPCION_AYUDA);
             break;
-        /*Ejecutar codigo
+        /*Ejecutar codigo*/
         case ST_HALT:
             fprintf(stderr, "%s. %s\n", MSJ_ST_HALT, MSJ_OPCION_AYUDA);
             break;
         case ST_ERROR_SEGMENTATION_FAULT:
             fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_SEGMENTATION_FAULT, MSJ_OPCION_AYUDA);
             break;
-        case ST_ERROR_CAD_NO_LEIDA:
-            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_CAD_NO_LEIDA, MSJ_OPCION_AYUDA);
-            break;
         case ST_ERROR_OPCODE_INVALIDO:
             fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_OPCODE_INVALIDO, MSJ_OPCION_AYUDA);
             break;
-        case ST_ERROR_MAX_INSTR_SUPERADO:
-            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_MAX_INSTR_SUPERADO, MSJ_OPCION_AYUDA);
+        case ST_ERROR_OVERFLOW:
+            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_OVERFLOW, MSJ_OPCION_AYUDA);
             break;
-        case ST_ERROR_MAX_INGRESOS_SUPERADO:
-            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_MAX_INSTR_SUPERADO, MSJ_OPCION_AYUDA);
-            break;
-        */
         default:
             fprintf(stderr, "%s\n", MSJ_OPCION_AYUDA);
     }
@@ -720,7 +950,7 @@ bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector){
         return FALSE;
     
     for(i = 1; lista != NULL; i++){
-
+        
         if(!vector_redimensionar(*vector, i)){
             vector_destruir(vector);
             return FALSE;
@@ -728,7 +958,7 @@ bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector){
         if(!vector_guardar_int(*vector,i,(int*)&lista->dato)){
             vector_destruir(vector);
             return FALSE;
-        }        
+        }
         lista = lista->sig;
     }
     return TRUE;
@@ -767,7 +997,7 @@ bool_t vector_redimensionar(vector_t *v, size_t n){
     aux = (void*)calloc(1, n * sizeof(void*));
     if(!aux)
         return FALSE;
-    v->datos = memcpy(aux, v->datos, n > v->usado ? v->usado * sizeof(void*) : n * sizeof(void*));
+    v->datos = memcpy(aux, v->datos, n > v->usado ? (v->usado) * sizeof(void*) : (n) * sizeof(void*));
     v->pedido = n;
     if(v->usado > v->pedido)
         v->usado = v->pedido;
@@ -816,5 +1046,15 @@ void vector_iterar_int(vector_t * v, void (*func)(void *,void *), void * arg){
 * Sólo trabajo con enteros.*/
 void imprimir_int(void * dato, void* stream){
     fprintf(stream, "%i ", *(int*)dato);
+}
+/*Se DEBE validar el puntero antes de usar la funcion*/
+int obtener_dato(vector_t * v, size_t i){
+    return ((int*)(v->datos))[i - 1];
+}
+int obtener_usado(vector_t * v){
+    return v == NULL ? EOF : v->usado;
+}
+int obtener_pedido(vector_t *v){
+    return v == NULL ? EOF : v->pedido;
 }
 /******************************************************************************************************/
