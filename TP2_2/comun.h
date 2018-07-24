@@ -2,6 +2,7 @@
 #define COMUN__H
 
 #define MAX_STR 200
+#define NUMERO_FIN_CARGA -99999999
 #define STR_FIN_CARGA "-99999999"
 #define MIN_PALABRA -640511  /*Maximo alcanzable en formato texto que puede abarcar el formato binario*/
 #define MAX_PALABRA 630511
