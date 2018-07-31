@@ -12,6 +12,12 @@ void imprimir_estado(status_t status){
         case ST_ERROR_PTR_NULO:
             fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_PTR_NULO, MSJ_OPCION_AYUDA);
             break;
+        case ST_ERROR_PALABRA_NO_VALIDA:
+            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_PALABRA_NO_VALIDA, MSJ_OPCION_AYUDA);
+            break;
+        case ST_ERROR_LEER_PALABRA:
+            fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_LEER_PALABRA, MSJ_OPCION_AYUDA);
+            break;    
         case ST_ERROR_MEMORIA:
             fprintf(stderr, "%s. %s\n", MSJ_ST_ERROR_MEMORIA, MSJ_OPCION_AYUDA);
             break;
