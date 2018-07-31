@@ -5,6 +5,9 @@
 #include "comun.h"
 #include <string.h>
 
+/*La función recibe un puntero a estructura de params_t*/
+/*Abre todos los archivos que se encuentran en dicha estrucutura, los guarda en un stream y devuelve por
+el nombre la cantidad de archivos abiertos. Retorna EOF si hubo un error*/
 int abrir_archivos(params_t * param){
     size_t archivos_abiertos = 0;
     size_t i;
@@ -40,6 +43,9 @@ int abrir_archivos(params_t * param){
 
     return archivos_abiertos;
 }
+
+/*Recibe un puntero a params_t, detecta los streams abiertos y los cierra*/
+/*Devuelve por el nombre la cantidad de archivos cerrados, EOF si hubo un error*/
 int cerrar_archivos(params_t * param){
     size_t archivos_cerrados = 0;
     size_t i;
@@ -57,7 +63,9 @@ int cerrar_archivos(params_t * param){
     return archivos_cerrados;
 }
 /*La destruccion de las listas se realiza afuera de esta función, recibe una lista vacia*/
-/*Revisar optimizacion/correccion de funciones de carga*/
+/*Recibe una lista vacía, una estructura archivo_t y un maximo de memoria disponible*/
+/*Retorna por el nombre el estado de la operacion de carga de palabras, que es delegado a funciones
+mas especificas*/
 status_t cargar_lista_palabras(archivo_t archivo, lista_t * lista, size_t * cant_palabras){
     if(lista == NULL)
         return ST_ERROR_PTR_NULO;
@@ -126,12 +134,12 @@ status_t cargar_lista_palabras_stdin(lista_t * lista, size_t * cant_palabras){
     fprintf(stdout, "%s\n", MSJ_BIENVENIDO_SIMPLETRON);
     
     while (i < *cant_palabras) {
-    	fprintf(stdout, "%02lu ? ", i);
-    	fgets(buffer, MAX_STR, stdin);
+        fprintf(stdout, "%02lu ? ", i);
+        fgets(buffer, MAX_STR, stdin);
 
         palabra = strtol(buffer, &pch, 10);
         if(palabra == NUMERO_FIN_CARGA)
-        	break;
+            break;
         /*Verificaion de que la palabra cumpla requisitos.....*/
         if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra)){
             return ST_ERROR_PALABRA_NO_VALIDA;
