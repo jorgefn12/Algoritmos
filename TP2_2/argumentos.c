@@ -4,6 +4,22 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
+La función recorre argv y va validando los argumentos por este orden de precedencia m->f->archivos
+-h necesita estar como unico argumento, sino devuelve error.
+Ninguno es obligatorio, todos tienen valores por default
+Si se invoca un flag (-m, -f), el siguiente argumento se toma como su opcion asignada.
+
+Si no encuentra un argumento, inmediatamente chequea por el siguiente hasta alcanzar el final de argv.
+
+./simpletron -f bin -m 20, detecta -f y espera encontrar archivos. Busca -m y 20 como archivos.
+./simpletron dadd -f txt, busca dadd, -f y txt como archivos
+./simpletron -m 20 b:hola , cumple el orden de precedencia. Almacena cant_mem = 20 y busca b:hola como archivo binario
+./simpletron -f bin -   cumple el orden. OK
+./simpletron b:stdin     ,intenta tomar como archivo de entrada a stdin en formato binario, por ahora lo tomé como error.
+./simpletron t:stdin ó ./simpletron -           toman a stdin como archivo de entrada en formato de texto
+*/
+
 status_t validacion_cla(int argc, char** argv, params_t *param) {
     size_t i = 1, j, cant_archivos;
     bool_t stdin_flag = FALSE;
