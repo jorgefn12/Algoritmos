@@ -11,7 +11,6 @@
 #define MSJ_AYUDA_ARCHIVOS "ARCHIVOS:\n Los nombres de archivo de entrada deberan estar antecedidos por 't:' o 'b:' si el archivo debera leerse como un archivo de texto o un archivo binario respectivamente. En caso de omiterse esta especificacion, el archivo sera leido como un archivo de texto. En caso de que no se ingresen nombres de archivos, la entrada de datos sera por stdin"
 #define MSJ_OPCION_AYUDA "Ingrese: .\\simpletron -h o .\\simpletron --help para mas informacion."
 #define MSJ_ST_OK "La operación finalizó correctamente"
-#define MSJ_ST_AYUDA "Leer documentación. Escribir función para mensaje de ayuda"
 #define MSJ_ST_ERROR_PTR_NULO "Puntero nulo"
 #define MSJ_ST_ERROR_MEMORIA "Ocurrio un error al pedir memoria"
 #define MSJ_ST_ERROR_ARCHIVO_NO_ENCONTRADO "El archivo ingresado no se encuentra"
@@ -22,6 +21,7 @@
 /*carga*/
 #define MSJ_ST_ERROR_LEER_PALABRA "Ocurrio un error al leer palabra del archivo"
 #define MSJ_ST_ERROR_PALABRA_NO_VALIDA "La palabra ingresada no es valida"
+#define MSJ_ST_ERROR_GUARDAR_LISTA "Ocurrió un error al procesar los datos"
 #define MSJ_ST_MEMORIA_INSUFICIENTE "Se superó la memoria solicitada para el simpletron"
 /*ejecucion*/
 #define MSJ_ST_ERROR_SEGMENTATION_FAULT "Se intentó acceder a un área restringida de memoria"
