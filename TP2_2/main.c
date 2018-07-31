@@ -17,35 +17,39 @@ int main(int argc, char** argv){
     params_t argumentos;
     lista_t lista;
     size_t i;
-    
+
     if((st = validacion_cla(argc, argv, &argumentos)) != ST_OK){
     	imprimir_estado(st);
     	return EXIT_FAILURE;
     }
     if(!crear_simpletron(&argumentos,&simply)){
-    	destructor(&argumentos, &simply);
+    	destruir_params(&argumentos);
     	return EXIT_FAILURE;
     }
     if(abrir_archivos(&argumentos) != argumentos.cant_archivos + 1){
     	fprintf(stderr, "%s\n", MSJ_ST_ERROR_ARCHIVO_NO_ENCONTRADO);
-    	destructor(&argumentos, &simply);
+    	destruir_simpletron(&simply, &argumentos);
+        destruir_params(&argumentos);
     	return EXIT_FAILURE;
     }
     for(i = 0; i < argumentos.cant_archivos; i++){
         crear_lista(&lista);
-        if(cargar_lista_palabras(argumentos.archivo_entrada[i], &lista, &argumentos.cant_memoria) != ST_OK){
-        	destructor(&argumentos, &simply);
-        	return EXIT_FAILURE;
+        if((st = cargar_lista_palabras(argumentos.archivo_entrada[i], &lista, &argumentos.cant_memoria) != ST_OK)){
+            imprimir_estado(st);
+            destructor(&argumentos, &simply);
+            return EXIT_FAILURE;
         }
         if(!guardar_lista_en_vector(lista, &simply->memoria[i])){
-        	destructor(&argumentos, &simply);
-        	return EXIT_FAILURE;
+            fprintf(stderr, "%s\n", MSJ_ST_ERROR_GUARDAR_LISTA);
+            destructor(&argumentos, &simply);
+            return EXIT_FAILURE;
         }
         destruir_lista(&lista);
     }
-    if(ejecutar_codigo(simply, &argumentos) != ST_OK){
-    	destructor(&argumentos, &simply);
-    	return EXIT_FAILURE;
+    if((st = ejecutar_codigo(simply, &argumentos) != ST_OK)){
+        imprimir_estado(st);
+        destructor(&argumentos, &simply);
+        return EXIT_FAILURE;
     }
 
     cerrar_archivos(&argumentos);
