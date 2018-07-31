@@ -2,12 +2,17 @@
 #include "tipos.h"
 #include <stdlib.h>
 #include <string.h>
-
+/*Definicion de TDA VECTOR*/
 typedef struct vector{
     size_t usado, pedido;
     void * datos;
 } vector_t;
-/*Crea vector de 1 dimension*/
+
+/*Primiticas de TDA VECTOR*/
+
+
+/*Crea vector de 1 dimension con n cantidad de elementos. Devuelve su puntero por el nombre
+*/
 vector_t * crear_vector(size_t n){
     vector_t * v;
     
@@ -94,7 +99,8 @@ void vector_iterar_int(vector_t * v, void (*func)(void *,void *), void * arg){
 void imprimir_int(void * dato, void* stream){
     fprintf(stream, "%i ", *(int*)dato);
 }
-/*Se DEBE validar el puntero antes de usar la funcion*/
+/*Se debe validar el puntero antes de usar las funciones obtener*/
+/*Obtienen información de la estructura del vector*/
 int obtener_dato(vector_t * v, size_t i){
     return ((int*)(v->datos))[i - 1];
 }
