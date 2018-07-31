@@ -178,6 +178,7 @@ status_t lms_guardar(simpletron_t * simpletron, vector_t * memoria){
 int obtener_dato(vector_t * v, size_t i);
 int obtener_usado(vector_t * v);
 int obtener_pedido(vector_t * v);
+
 status_t lms_pcargar(simpletron_t * simpletron, vector_t * memoria){
     if(obtener_dato(memoria, simpletron->operando + 1) > obtener_pedido(memoria) + 1 || obtener_dato(memoria, simpletron->operando + 1) < 0){
         fprintf(stdout,"%s\n",MSJ_ST_ERROR_SEGMENTATION_FAULT);
