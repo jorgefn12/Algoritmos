@@ -46,6 +46,10 @@ bool_t crear_simpletron(params_t * param, simpletron_t ** simpletron);
 void destruir_simpletron(simpletron_t ** simpletron, params_t * param);
 bool_t palabra_es_valida(palabra_t palabra);
 status_t ejecutar_codigo(simpletron_t * simpletron, params_t * param);
+
+/*Las funciones reciben un puntero a vector_t para no perder la referencia y
+poder manejarse solamente con primitivas de forma más sencilla
+*/
 status_t lms_leer(simpletron_t * simpletron, vector_t * memoria);
 status_t lms_escribir(simpletron_t * simpletron, vector_t * memoria);
 status_t lms_cargar(simpletron_t * simpletron, vector_t * memoria);
