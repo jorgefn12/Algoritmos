@@ -1,17 +1,21 @@
 #include "listas.h"
 #include "tipos.h"
-
+/*Deficinicion de TDA LISTA*/
 typedef struct nodo{
     struct nodo * sig;
     void * dato;
 } nodo_t, * lista_t; 
 
+/*Primitivas de TDA LISTA*/
+
+/*Inicializa un puntero a lista*/
 status_t crear_lista(lista_t * lista){
     if(!lista)
         return ST_ERROR_PTR_NULO;
     *lista = NULL;
     return ST_OK;
 }
+/*Crea un nuevo nodo y lo devuelve por el nombre*/
 nodo_t * crear_nodo(void * dato){
     nodo_t * nodo = NULL;
     nodo = (nodo_t *)calloc(1,sizeof(nodo_t));
@@ -66,6 +70,10 @@ void imprimir_lista_int(lista_t lista){
     }
     putchar('\n');
 }
+
+/*Recibe un TDA LISTA y un Puntero doble a TDA VECTOR*/
+/*Retorna por el nombre un booleano indicando el resultado de la operacion de guardado*/
+/*Utiliza el metodo de insercion al final*/
 bool_t guardar_lista_en_vector(lista_t lista, vector_t ** vector){
     size_t i;
 
