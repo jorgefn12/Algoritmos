@@ -3,6 +3,8 @@
 #include "memoria.h"
 #include "argumentos.h"
 
+/*Recibe un puntero a simpletron, un puntero a TDA vector y un puntero a estructura param */
+/*La realiza la impresión por dump al delegar funciones especificas según el formato*/
 void imprimir_dump(simpletron_t * simpletron, vector_t * memoria, params_t * param){
     switch(param->archivo_salida->formato){
         case FMT_TXT:
