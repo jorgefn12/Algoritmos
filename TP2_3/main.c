@@ -3,7 +3,7 @@
 int main(int argc, char** argv){
     status_t st;
     params_t argumentos;
-    size_t i, j;
+    size_t i;
     simpletron_t * simply;
     lista_t lista = NULL;
     
