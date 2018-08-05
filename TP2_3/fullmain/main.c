@@ -39,10 +39,7 @@ typedef enum{
     ST_ERROR_LEER_PALABRA,
     ST_MEMORIA_INSUFICIENTE,
     /*status de ejecutar_codigo*/
-    ST_HALT,
-    ST_ERROR_SEGMENTATION_FAULT,
-    ST_ERROR_OPCODE_INVALIDO,
-    ST_ERROR_OVERFLOW
+    ST_ERROR_VECTOR
 }status_t;
 typedef enum{
     VCT_RV_SUCCESS = 0,
@@ -73,7 +70,8 @@ typedef enum{
     SMP_RV_OVERFLOW = 7,
     SMP_RV_OPCODE_INVALIDO = 8,
     SMP_RV_ERROR_MEMORIA = 9,
-    SMP_RV_HALT = 10
+    SMP_RV_ILLEGAL = 10,
+    SMP_RV_HALT = 11
 } simply_retval_t;
 typedef enum{
     FMT_TXT,
@@ -187,6 +185,7 @@ simply_retval_t lms_halt(simpletron_t * simpletron);
 
 #define DELIMITADOR_COMENTARIO ";"
 int abrir_archivos(params_t * param);
+int cerrar_archivos(params_t * param);
 status_t leer_archivo(vector_t ** memoria, archivo_t * archivo, size_t cantidad);
 status_t leer_archivo_txt(vector_t ** memoria, FILE * stream, size_t cantidad);
 status_t leer_archivo_bin(vector_t ** memoria, FILE * stream, size_t cantidad);
@@ -242,13 +241,30 @@ void debug(void){
 palabra_t formar_palabra_bin(uchar high_byte, uchar low_byte);
 palabra_t get_opcode(palabra_t palabra, formato_t formato);
 palabra_t get_operando(palabra_t palabra, formato_t formato);
-palabra_t complemento_a_2(palabra_t palabra, palabra_t BIT_FIELD, palabra_t MSB);
-palabra_t invertir_complemento_a_2(palabra_t palabra, palabra_t BIT_FIELD);
+palabra_t aplicar_signo(palabra_t palabra, palabra_t BIT_FIELD, palabra_t MSB);
+palabra_t quitar_signo_palabra(palabra_t palabra, palabra_t BIT_FIELD);
 void imprimir_palabra_txt(palabra_t palabra, formato_t formato);
 palabra_t cambiar_fmt_palabra(palabra_t palabra, formato_t destino);
 
 int main(int argc, char** argv) {
+    params_t argumentos;
+    size_t i;
+    simpletron_t * simply;
+    lista_t lista = NULL;
     
+    validacion_cla(argc,argv, &argumentos);
+    abrir_archivos(&argumentos);
+    for(i = 0; i < argumentos.cant_archivos; i++){
+        simply = SIMPLETRON_crear();
+        leer_archivo(&simply->memoria, &argumentos.archivo_entrada[i], argumentos.cant_memoria);
+        LISTA_insertar_al_final(&lista,simply);
+    }
+    LISTA_aplicar(lista, (retval_t (*)(void*))SIMPLETRON_ejecutar);
+    LISTA_recorrer(lista, (retval_t (*)(void*,void*))imprimir_dump, argumentos.archivo_salida);
+    LISTA_destruir(&lista, (retval_t (*)(void*))SIMPLETRON_destruir);
+    cerrar_archivos(&argumentos);
+    destruir_params(&argumentos);
+
     /*MAIN PARA TESTEAR PRIMITIVAS DE LISTAS
     int datos[] = {0,1,2,3,4,5,6,7,8,9};
     lista_t lista = NULL;
@@ -260,7 +276,7 @@ int main(int argc, char** argv) {
     LISTA_aplicar(lista, square_entero);
     LISTA_recorrer(lista, imprimir_entero, stdout);
     */
-    /*MAIN PARA TESTEAR ARGUMENTOS, CARGA DE MEMORIA Y EJECUCION*/
+    /*MAIN PARA TESTEAR ARGUMENTOS, CARGA DE MEMORIA Y EJECUCION
     
     status_t st;
     params_t argumentos;
@@ -306,7 +322,7 @@ int main(int argc, char** argv) {
     }
     
     LISTA_recorrer(lista, (retval_t (*)(void*,void*))imprimir_dump, argumentos.archivo_salida);
-
+    */
     /*MAIN PARA TESTEAR VECTORES
     vector_t * pvector;
     size_t i;
@@ -351,7 +367,7 @@ void imprimir_palabra_txt(palabra_t palabra, formato_t formato){
             printf("%d\n", palabra);
             break;
         case FMT_BIN:
-            opcode = complemento_a_2(get_opcode(palabra, FMT_BIN), MASK_OPCODE >> OPCODE_SHIFT, MASK_MSB >> OPCODE_SHIFT);
+            opcode = aplicar_signo(get_opcode(palabra, FMT_BIN), MASK_OPCODE >> OPCODE_SHIFT, MASK_MSB >> OPCODE_SHIFT);
             operando = get_operando(palabra,FMT_BIN);
             palabra = opcode * OPCODE_OPERANDO_MULTIPLIER + (opcode >= 0 ? operando : -operando);
             printf("%d\n", palabra);
@@ -376,7 +392,7 @@ palabra_t get_operando(palabra_t palabra, formato_t formato){
     return formato != FMT_TXT ? palabra & MASK_OPERANDO : palabra % OPCODE_OPERANDO_MULTIPLIER;
 }   /*TESTEADO*/
 /*Se usa para cambiar de opcode binario a opcode texto si el MSB esta activo*/
-palabra_t complemento_a_2(palabra_t palabra, palabra_t BIT_FIELD ,palabra_t MSB){
+palabra_t aplicar_signo(palabra_t palabra, palabra_t BIT_FIELD ,palabra_t MSB){
     /*Se puede mejoror si en lugar de complementar dos veces, se llenan de 1s en los bits por delante del opcode*/
     /*
     return palabra & MSB ? -(((~palabra) & BIT_FIELD) + 1) : palabra;
@@ -385,7 +401,7 @@ palabra_t complemento_a_2(palabra_t palabra, palabra_t BIT_FIELD ,palabra_t MSB)
     
 } /*TESTEADO*/
 /*Para pasar de texto a binario si el opcode fuera negativo*/
-palabra_t invertir_complemento_a_2(palabra_t palabra, palabra_t BIT_FIELD){
+palabra_t quitar_signo_palabra(palabra_t palabra, palabra_t BIT_FIELD){
     return palabra & BIT_FIELD;
 }   /*TESTEADO*/
 /*Se asume que las palabras estan validadas y llenadas con ceros a la izquierda*/
@@ -398,11 +414,11 @@ palabra_t cambiar_fmt_palabra(palabra_t palabra, formato_t actual){
     
     switch(actual){
         case FMT_BIN: /*La palabra estaba almacenada en un entero con el formato binario y se quiere pasar al formato texto*/
-            opcode = complemento_a_2(opcode, MASK_OPCODE >> OPCODE_SHIFT, MASK_MSB >> OPCODE_SHIFT);
+            opcode = aplicar_signo(opcode, MASK_OPCODE >> OPCODE_SHIFT, MASK_MSB >> OPCODE_SHIFT);
             return opcode * OPCODE_OPERANDO_MULTIPLIER + (opcode >= 0 ? operando : -operando);
         case FMT_TXT:
             /*Si el opcode fuera negativo, necesito eliminar los 1s delanteros*/
-            opcode = invertir_complemento_a_2(opcode, MASK_OPCODE >> OPCODE_SHIFT);
+            opcode = quitar_signo_palabra(opcode, MASK_OPCODE >> OPCODE_SHIFT);
             return (( (int) 0 | opcode) << OPCODE_SHIFT) | operando;
         default:
             return palabra;
@@ -429,7 +445,7 @@ void imprimir_dump_txt(simpletron_t * simpletron, FILE * stream){
     memoria_pedida = VECTOR_obtener_memoria_pedida(simpletron->memoria);
     
     fprintf(stream, "\n%s:\n", DUMP_MSJ_REGISTROS);
-    fprintf(stream, "%15s:     %05X\n", DUMP_MSJ_ACUMULADOR, simpletron->acumulador);
+    fprintf(stream, "%15s:     %04X\n", DUMP_MSJ_ACUMULADOR, simpletron->acumulador);
     fprintf(stream, "%15s:%9ld\n", DUMP_MSJ_PROGRAM_COUNTER, simpletron->program_counter);
     fprintf(stream, "%15s: %+08d\n", DUMP_MSJ_INSTRUCCION, instruccion_txt);
     fprintf(stream, "%15s:%9d\n", DUMP_MSJ_OPCODE, opcode_txt);
@@ -437,12 +453,11 @@ void imprimir_dump_txt(simpletron_t * simpletron, FILE * stream){
     fprintf(stream, "%s:", DUMP_MSJ_MEMORIA);
 
     for (i = 0, j = 0; i < memoria_pedida; i++){
-        if (!(i % 10))
-            fprintf(stream, "\n%02x0:", j++);
+        if (!(i % 8))
+            fprintf(stream, "\n%02lx0:", j++);
 
-        fprintf(stream, " %05X", VECTOR_obtener_dato(simpletron->memoria, i + 1));
+        fprintf(stream, " %04X", VECTOR_obtener_dato(simpletron->memoria, i + 1));
     }
-    putchar('\n');
 }
 void imprimir_dump_bin(simpletron_t * simpletron, FILE * stream){
     size_t i, memoria_pedida;
@@ -456,6 +471,7 @@ void imprimir_dump_bin(simpletron_t * simpletron, FILE * stream){
     }
 }
 /******************************LISTAS.C**********************************************************/
+/*TRATAR DE VALIDAR FUNCIONES DE LISTA QUE RECIBEN FUNCIONES COMO ARGUMETO*/
 bool_t LISTA_esta_vacia(lista_t lista) {
     return lista == NULL;
 }
@@ -495,7 +511,7 @@ retval_t LISTA_destruir_nodo(nodo_t ** pnodo, retval_t (*destructor_dato)(void *
     free(*pnodo);
     *pnodo = NULL;
 
-    return (destructor_dato != NULL) ? (*destructor_dato)(dato) : RV_SUCCESS;
+    return (destructor_dato != NULL) ? (*destructor_dato)(&dato) : RV_SUCCESS;
 }
 retval_t LISTA_destruir_primero(lista_t * plista, retval_t (*destructor_dato)(void *)) {
     nodo_t * primero;
@@ -513,7 +529,6 @@ retval_t LISTA_destruir_primero(lista_t * plista, retval_t (*destructor_dato)(vo
 }
 retval_t LISTA_destruir(lista_t * plista, retval_t (*destructor_dato)(void *)) {
     nodo_t * siguiente;
-
     if(plista == NULL)
         return RV_ILLEGAL;
 
@@ -609,14 +624,14 @@ int abrir_archivos(params_t * param){
     size_t i;
     
     if(param == NULL)
-        return EOF;
+        return -1;
     switch(param->archivo_salida->formato){
         case FMT_TXT:
-            if((param->archivo_salida->stream = fopen(param->archivo_salida->nombre,"at")) != NULL)
+            if((param->archivo_salida->stream = fopen(param->archivo_salida->nombre,"w+t")) != NULL)
                 archivos_abiertos++;
             break;
         case FMT_BIN:
-            if((param->archivo_salida->stream = fopen(param->archivo_salida->nombre,"ab")) != NULL)
+            if((param->archivo_salida->stream = fopen(param->archivo_salida->nombre,"w+b")) != NULL)
                 archivos_abiertos++;
             break;
     }
@@ -639,6 +654,22 @@ int abrir_archivos(params_t * param){
 
     return archivos_abiertos;
 }
+int cerrar_archivos(params_t * param){
+    size_t archivos_cerrados = 0;
+    size_t i;
+    
+    if(param == NULL)
+        return -1;
+    if(fclose(param->archivo_salida->stream) != EOF)
+        archivos_cerrados++;
+    if(param->archivo_entrada->nombre == NULL)
+        return archivos_cerrados;
+    for(i = 0; i < param->cant_archivos; i++){
+        if(fclose(param->archivo_entrada[i].stream) != EOF)
+            archivos_cerrados++;
+    }
+    return archivos_cerrados;
+}
 status_t leer_archivo(vector_t ** memoria, archivo_t * archivo, size_t cantidad){
     if(memoria == NULL || archivo == NULL)
         return ST_ERROR_PTR_NULO;
@@ -657,10 +688,10 @@ status_t leer_archivo(vector_t ** memoria, archivo_t * archivo, size_t cantidad)
 status_t leer_archivo_txt(vector_t ** memoria, FILE * stream, size_t cantidad){
     char buffer[MAX_STR], *pch;
     palabra_t palabra;
-    status_t status;
     size_t i;
     
-    VECTOR_crear(memoria,1);
+    if(VECTOR_crear(memoria,1) != VCT_RV_SUCCESS)
+        return ST_ERROR_VECTOR;
     for(i = 0; fgets(buffer, MAX_STR, stream) != NULL && i < cantidad; i++){
         pch = strtok(buffer, DELIMITADOR_COMENTARIO);
         palabra = strtol(buffer, &pch, 10);
@@ -668,8 +699,11 @@ status_t leer_archivo_txt(vector_t ** memoria, FILE * stream, size_t cantidad){
         if (pch == NULL || (*pch != '\n' && *pch != '\0') || !palabra_es_valida(palabra))
             return ST_ERROR_PALABRA_NO_VALIDA;
         palabra = cambiar_fmt_palabra(palabra,FMT_TXT);
-        VECTOR_redimensionar(*memoria, i + 1);
-        VECTOR_guardar_entero(*memoria, i + 1, palabra);
+        
+        if(VECTOR_redimensionar(*memoria, i + 1) != VCT_RV_SUCCESS)
+            return ST_ERROR_VECTOR;
+        if(VECTOR_guardar_entero(*memoria, i + 1, palabra) != VCT_RV_SUCCESS)
+            return ST_ERROR_VECTOR;
     }
     
     if(ferror(stream))
@@ -682,20 +716,22 @@ status_t leer_archivo_txt(vector_t ** memoria, FILE * stream, size_t cantidad){
  la convención de complemento a 2 */
 status_t leer_archivo_bin(vector_t ** memoria, FILE * stream, size_t cantidad){
     uchar high_byte, low_byte;
-    palabra_t palabra, opcode, operando;
-    status_t st;
+    palabra_t palabra;
     size_t i;
     
-    VECTOR_crear(memoria,1);
+    if(VECTOR_crear(memoria,1) != VCT_RV_SUCCESS)
+        return ST_ERROR_VECTOR;
     for(i = 0; fread(&high_byte,1,1,stream) == 1 && i < cantidad; i++){
         if((fread(&low_byte,1,1,stream) != 1))
             return ST_ERROR_LEER_PALABRA;
         palabra = 0;
         /*Palabra en binario, con ceros rellenados a la izquierda*/
         palabra = ((palabra | high_byte) << BYTE_SHIFT) | low_byte;
-
-        VECTOR_redimensionar(*memoria, i + 1);
-        VECTOR_guardar_entero(*memoria, i + 1, palabra);
+        
+        if(VECTOR_redimensionar(*memoria, i + 1) != VCT_RV_SUCCESS)
+            return ST_ERROR_VECTOR;
+        if(VECTOR_guardar_entero(*memoria, i + 1, palabra) != VCT_RV_SUCCESS)
+            return ST_ERROR_VECTOR;
     }
     if(ferror(stream))
         return ST_ERROR_LEER_PALABRA;
@@ -705,12 +741,12 @@ status_t leer_archivo_bin(vector_t ** memoria, FILE * stream, size_t cantidad){
 status_t leer_archivo_stdin(vector_t ** memoria, size_t cantidad){
     char buffer[MAX_STR], *pch;
     palabra_t palabra;
-    status_t st;
     size_t i;
     
     fprintf(stdout, "%s\n", MSJ_BIENVENIDO_SIMPLETRON);
     
-    VECTOR_crear(memoria,1);
+    if(VECTOR_crear(memoria,1) != VCT_RV_SUCCESS)
+        return ST_ERROR_VECTOR;
     for(i = 0; i < cantidad; i++){
         fprintf(stdout, "%02lu ? ", i);
         
@@ -726,8 +762,11 @@ status_t leer_archivo_stdin(vector_t ** memoria, size_t cantidad){
             return ST_ERROR_PALABRA_NO_VALIDA;
         
         palabra = cambiar_fmt_palabra(palabra,FMT_TXT);
-        VECTOR_redimensionar(*memoria, i + 1);
-        VECTOR_guardar_entero(*memoria, i + 1, palabra);
+        
+        if(VECTOR_redimensionar(*memoria, i + 1) != VCT_RV_SUCCESS)
+            return ST_ERROR_VECTOR;
+        if(VECTOR_guardar_entero(*memoria, i + 1, palabra) != VCT_RV_SUCCESS)
+            return ST_ERROR_VECTOR;
     }
     if(i == cantidad)
         return ST_MEMORIA_INSUFICIENTE;
@@ -879,12 +918,14 @@ void SIMPLETRON_destruir(simpletron_t ** simply){
         *simply = NULL;
     }
 }
-
 simply_retval_t SIMPLETRON_ejecutar(simpletron_t * simply){
     size_t i;
-    int memoria_pedida, dato;
+    int memoria_pedida;
     simply_retval_t status;
     pfx_lms operacion;
+    
+    if(simply == NULL || simply->memoria == NULL)
+        return SMP_RV_ILLEGAL;
     
     memoria_pedida = VECTOR_obtener_memoria_pedida(simply->memoria);
     fprintf(stdout, "%s\n", MSJ_COMIENZO_EJECUCION);
@@ -908,8 +949,8 @@ simply_retval_t SIMPLETRON_ejecutar(simpletron_t * simply){
         /*Ejecuta opcde*/
         operacion = instrucciones[i];
         status = (*operacion)(simply);
-        if (status != ST_OK){
-            if(status != ST_HALT){
+        if (status != SMP_RV_SUCCESS){
+            if(status != SMP_RV_HALT){
                 fprintf(stdout,"%s\n", MSJ_FIN_EJECUCION);
                 return status;
             }
@@ -935,7 +976,7 @@ simply_retval_t lms_leer(simpletron_t * simpletron){
     if(palabra > MAX_PALABRA_BIN_SIGNED || palabra < MIN_PALABRA_BIN_SIGNED)
         return SMP_RV_PALABRA_FUERA_DE_RANGO;
     
-    palabra = invertir_complemento_a_2(palabra, MASK_PALABRA);
+    palabra = quitar_signo_palabra(palabra, MASK_PALABRA);
     
     VECTOR_guardar_entero(simpletron->memoria, simpletron->operando + 1, palabra);
     
@@ -945,7 +986,7 @@ simply_retval_t lms_escribir(simpletron_t * simpletron){
     palabra_t palabra;
 
     palabra = VECTOR_obtener_dato(simpletron->memoria, simpletron->operando + 1);
-    palabra = complemento_a_2(palabra, MASK_PALABRA, MASK_MSB);
+    palabra = aplicar_signo(palabra, MASK_PALABRA, MASK_MSB);
     
     fprintf(stdout,"%s %i: %i\n", MSJ_IMPRIMIR_PALABRA, simpletron->operando, palabra);
     return SMP_RV_SUCCESS;
@@ -996,8 +1037,8 @@ simply_retval_t lms_restar(simpletron_t * simpletron){
      Resto a nivel de bit, en el campo de la palabra*/
     resultado = simpletron->acumulador - VECTOR_obtener_dato(simpletron->memoria, simpletron->operando + 1);
     
-    resultado = invertir_complemento_a_2(resultado, MASK_PALABRA);
-    
+    resultado = quitar_signo_palabra(resultado, MASK_PALABRA);
+
     if(resultado > MAX_PALABRA_BIN || resultado < MIN_PALABRA_BIN){
         return SMP_RV_OVERFLOW;
     }
